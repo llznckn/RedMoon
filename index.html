@@ -861,10 +861,7 @@ function evRedmoon(){
   const reckonAll = S.done.has("basement") && memOwner && memChen && memGreen && rk.clean>=3;
   showScene({ bg:"moon", loc:"5:58 · 紅月熄滅",
     text:[{html:`5:58。牆上那盞紅月燈飾「啪」地熄滅，整間超市跌入厚重的、能聽見心跳的黑暗。<br>這是你在這裡的<b>第 ${saga.night} 夜</b>。此刻，四個「人」的目光，都隔著黑暗落到了你身上。<br>`}
-      ,{html:`<div class="ledger"><div class="led-title">── 清算天平 ──</div>
-      <div class="led-row"><span>今夜站你這一邊</span><i>${rk.扶} 人</i></div>
-      <div class="led-row"><span>你尚未了結的債</span><i>${rk.債} 筆</i></div>
-      <div class="led-note">${rk.backers.join("、")||"你在這間超市，誰也沒真正交情到。"}${reckonAll?"<br><span class='g'>四方的名字，都已經握在你手裡。</span>":""}</div></div>`}],
+      ,{html:`<b>── 清算天平 ──</b><br><br><b>今夜站你這一邊</b> …… ${rk.扶} 人<br><br><b>你尚未了結的債</b> …… ${rk.債} 筆<br><br>${rk.backers.join("、")||"你在這間超市，誰也沒真正交情到。"}${reckonAll?`<br><span class="g">四方的名字，都已經握在你手裡。</span>`:""}`}],
     warn:"最後一個抉擇。牌面在黑暗裡，翻開了你這些夜積攢的每一筆人情。",
     options:[
       (reckonAll?{text:"清算 · 余烬：把名冊上所有人的名字一次還清（真結局）", do:()=>{ renderTrueEnd(); } } : null),
