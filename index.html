@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夜班守则 · 紅月超市</title>
+<style>
+  :root{
+    --blood:#c2142b; --blood-dark:#5c0a15; --ember:#ff6b3d;
+    --paper:#d8c9a3; --paper-dim:#8a8064; --night:#050709; --night-2:#0b0f14;
+    --green:#3fae6a; --green-bright:#7dffa6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%}
+  body{background:#000;color:#d8c9a3;font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;overflow:hidden;height:100vh;position:relative}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:.42;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;animation:flicker 7s steps(2) infinite}
+  .scanlines{position:fixed;inset:0;pointer-events:none;z-index:7;opacity:.07;background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.92) 100%)}
+  @keyframes flicker{0%,100%{opacity:.42}8%{opacity:.1}10%{opacity:.5}45%{opacity:.34}55%{opacity:.1}57%{opacity:.46}}
+  @keyframes shake{0%,100%{transform:translate(0,0)}10%{transform:translate(-2px,1px)}30%{transform:translate(2px,-1px)}50%{transform:translate(-1px,2px)}70%{transform:translate(1px,-2px)}90%{transform:translate(-3px,0)}}
+  body.danger{animation:shake .5s linear}
+  body.flicker{animation:flicker .1s linear 4}
+
+  #app{position:relative;height:100%;width:100%;z-index:3;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid rgba(179,18,42,.35);
+    background:linear-gradient(180deg,rgba(20,6,10,.92),rgba(5,7,9,.55));backdrop-filter:blur(4px);z-index:5}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .glyph{width:38px;height:38px;border:1px solid var(--blood);color:var(--blood);display:flex;align-items:center;justify-content:center;font-size:20px;text-shadow:0 0 12px var(--blood);cursor:pointer;transition:.3s;background:rgba(179,18,42,.08)}
+  .brand .glyph:hover{background:rgba(179,18,42,.25)}
+  .brand h1{font-size:19px;letter-spacing:5px;font-weight:900}
+  .brand h1 span{color:var(--blood);text-shadow:0 0 14px rgba(179,18,42,.9)}
+  .meta{display:flex;gap:20px;align-items:center}
+  .meta .t{font-size:12px;color:var(--paper-dim);letter-spacing:1px}
+  .meta .t b{color:#e8dfc3;font-size:15px;margin-left:6px}
+  .clock{font-size:20px;color:var(--paper);letter-spacing:2px;font-family:Consolas,monospace}
+  .san-wrap{position:relative;width:140px}
+  .san-bar{height:10px;background:#1a0e12;border:1px solid rgba(179,18,42,.5);overflow:hidden}
+  .san-fill{height:100%;background:linear-gradient(90deg,#7dffa6,#ffd26b,#ff6b3d,#b3122a);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .san-label{font-size:10px;margin-bottom:4px;color:var(--paper-dim);letter-spacing:1px;display:flex;justify-content:space-between}
+  .inventory{display:flex;gap:5px;align-items:center}
+  .inv-chip{font-size:11px;border:1px solid rgba(179,18,42,.4);padding:2px 8px;color:var(--paper);letter-spacing:1px}
+  .inv-chip{display:none}.inv-chip.on{display:inline-block}
+  .navy{border:1px solid rgba(255,107,61,.45);color:var(--ember);font-size:11px;letter-spacing:2px;padding:2px 9px;background:rgba(40,14,6,.5);text-shadow:0 0 8px rgba(255,107,61,.4)}
+  .mini{display:flex;align-items:center;gap:5px}
+  .mini-k{font-size:11px;color:var(--paper-dim);letter-spacing:1px}
+  .mini-bar{width:56px;height:8px;background:#120d10;border:1px solid rgba(179,18,42,.4);overflow:hidden;border-radius:2px}
+  .mini-fill{height:100%;transition:width .6s ease,filter .6s}
+  @media(max-width:900px){.mini{display:none}.navy{display:none}}
+
+  .stage{flex:1;position:relative;overflow:hidden}
+  #stagebg{position:absolute;inset:0;background:#050709 center/cover no-repeat;transition:opacity 1s;opacity:1}
+  #stagebg:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,9,.85) 0%,rgba(5,7,9,.55) 40%,rgba(0,0,0,.86) 100%)}
+  .scene{position:relative;max-width:940px;margin:0 auto;height:100%;display:flex;flex-direction:column;padding:26px 30px 16px;z-index:2}
+  .place-chip{align-self:flex-start;display:flex;gap:10px;align-items:center;font-size:12px;letter-spacing:3px;color:var(--ember);border:1px solid rgba(255,107,61,.4);padding:4px 14px;margin-bottom:14px;background:rgba(10,8,6,.7);text-shadow:0 0 8px rgba(255,107,61,.4)}
+  .place-chip .loc{color:var(--blood)}
+  .narr{flex:1;overflow-y:auto;padding-right:8px}
+  .narr::-webkit-scrollbar{width:5px}.narr::-webkit-scrollbar-thumb{background:rgba(179,18,42,.4)}
+  .scene-title{font-size:26px;font-weight:900;letter-spacing:4px;color:#eae1c6;margin-bottom:8px;line-height:1.3;text-shadow:0 2px 22px rgba(0,0,0,.9)}
+  .scene-title .blood{color:var(--blood);text-shadow:0 0 18px rgba(179,18,42,.9)}
+  .para{font-size:16px;line-height:2.0;color:#cfc4a2;max-width:660px}
+  .para .r{color:var(--blood);font-weight:700}
+  .para .g{color:var(--green-bright);font-weight:700}
+  .para .bold{font-weight:900;color:#eae1c6}
+  .para .under{text-decoration:underline;text-underline-offset:3px}
+  .para .dim{color:#6f6a58}
+  .para .who{color:var(--ember);font-weight:700;letter-spacing:1px}
+  .cursor-blink{display:inline-block;width:9px;height:18px;background:var(--blood);vertical-align:-3px;margin-left:2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .hint-band{margin:6px 0 2px;font-size:12px;color:var(--paper-dim);letter-spacing:2px;display:flex;justify-content:space-between}
+  .hint-band .tip{color:var(--blood);font-weight:700}
+
+  .options{margin-top:14px;display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+  .opt{background:rgba(12,8,12,.66);border:1px solid rgba(179,18,42,.3);color:#d8c9a3;padding:13px 18px;font-size:14.5px;line-height:1.65;cursor:pointer;transition:.22s;text-align:left;letter-spacing:1px;backdrop-filter:blur(3px)}
+  .opt:hover:not(:disabled){border-color:var(--blood);background:rgba(179,18,42,.16);box-shadow:0 0 22px rgba(179,18,42,.25);transform:translateX(6px)}
+  .opt:disabled{opacity:.32;cursor:not-allowed}
+  .opt.req{opacity:.6}
+  .opt .idx{display:inline-block;color:var(--blood);font-weight:700;margin-right:10px;font-family:Consolas}
+  .opt .reqtag{display:inline-block;margin-left:8px;font-size:10px;color:var(--ember);border:1px solid rgba(255,107,61,.5);padding:0 5px;vertical-align:middle}
+  .opt.sel{border-color:var(--green);background:rgba(63,174,106,.12)}
+  .group-lab{font-size:11px;letter-spacing:2px;color:var(--blood);margin:4px 0 2px;border-top:1px dashed rgba(179,18,42,.25);padding-top:8px}
+
+  .overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(6px)}
+  .overlay.show{display:flex}
+  .book{width:min(760px,92vw);max-height:86vh;overflow:hidden;background:linear-gradient(160deg,#1a1410,#100c0a 70%);border:1px solid var(--blood);box-shadow:0 0 60px rgba(179,18,42,.4),inset 0 0 120px rgba(0,0,0,.8);display:flex;flex-direction:column;animation:bookIn .4s cubic-bezier(.2,.9,.2,1)}
+  @keyframes bookIn{from{transform:translateY(40px);opacity:0}}
+  .book-head{padding:18px 24px 12px;border-bottom:1px solid rgba(179,18,42,.3);display:flex;justify-content:space-between;align-items:center}
+  .book-head h2{font-size:22px;letter-spacing:8px;color:#eae1c6}.book-head h2 span{color:var(--blood)}
+  .book-close{cursor:pointer;border:1px solid var(--blood);color:var(--blood);padding:4px 14px;font-size:14px;transition:.3s}
+  .book-close:hover{background:var(--blood);color:#000}
+  .book-body{padding:20px 26px;overflow-y:auto;flex:1;font-size:14.5px;line-height:1.95;color:#cfc4a2}
+  .rule-item{margin-bottom:15px;padding-left:8px;border-left:2px solid rgba(179,18,42,.35)}
+  .rule-item b{color:var(--blood);font-family:Consolas;margin-right:8px}
+  .rule-item.found{color:#e8dfc3}
+  .rule-item.hidden-text{color:var(--green-bright);border-left-color:var(--green-bright)}
+  .book-body .note{margin-top:16px;color:#6f6a58;font-size:13px;letter-spacing:2px;text-align:center;border-top:1px dashed rgba(216,201,163,.15);padding-top:12px}
+  .book-body .sig{text-align:right;color:var(--blood);letter-spacing:3px;margin-top:6px;font-weight:700}
+  .ledger{margin-top:16px;padding:12px 14px;border:1px dashed rgba(216,201,163,.22);background:rgba(0,0,0,.28)}
+  .led-title{font-size:11px;letter-spacing:4px;color:var(--ember);text-align:center;margin-bottom:8px}
+  .led-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 2px;border-bottom:1px dotted rgba(216,201,163,.12)}
+  .led-row i{color:var(--green-bright);font-style:normal;font-weight:700}
+  .led-note{margin-top:8px;font-size:11px;color:#6f6a58;letter-spacing:1px;text-align:center}
+
+  .jumpscare{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:#000;cursor:pointer;text-align:center}
+  .jumpscare .big{font-size:clamp(56px,15vw,160px);color:var(--blood);font-weight:900;letter-spacing:10px;text-shadow:0 0 40px rgba(179,18,42,1),0 0 120px rgba(179,18,42,.6);animation:beat 1s ease-in-out infinite}
+  .jumpscare .sub{margin-top:18px;color:#8a8494;letter-spacing:3px;font-size:14px}
+  @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+  .ending{max-width:780px;margin:0 auto;text-align:center;align-items:center;justify-content:center;flex-direction:column;flex:1;display:flex;min-height:60vh}
+  .ending h2{font-size:clamp(32px,6.5vw,60px);font-weight:900;letter-spacing:8px;margin-bottom:6px}
+  .ending .grade{font-size:14px;letter-spacing:4px;color:var(--paper-dim);margin:16px 0 6px}
+  .ending .desc{max-width:560px;line-height:2;color:#cfc4a2;font-size:15.5px;margin-bottom:12px}
+  .ending .stats{display:flex;gap:34px;justify-content:center;margin:14px 0 24px;font-family:Consolas}
+  .ending .stats div{font-size:14px}.ending .stats b{font-size:24px;color:#eae1c6;display:block}
+  .btn{background:transparent;border:1px solid var(--blood);color:var(--blood);padding:13px 32px;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.3s;margin:4px}
+  .btn:hover{background:var(--blood);color:#000;box-shadow:0 0 30px rgba(179,18,42,.6)}
+  .px-hint{position:fixed;bottom:12px;right:16px;z-index:8;font-size:11px;letter-spacing:2px;color:#3c3a33}
+  @media(max-width:680px){.meta .t{display:none}.brand h1{font-size:15px}.scene{padding:18px 16px}}
+</style>
+</head>
+<body>
+<div class="noise"></div><div class="scanlines"></div><div class="vignette"></div>
+<div class="px-hint" id="audioHint">⚡ 點擊任意處開啟聲音</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="glyph" id="btnBook" title="翻閱《夜班守則》 (B)">◇</div>
+      <h1>夜班守則 <span>RED MOON</span></h1>
+    </div>
+    <div class="meta">
+      <div class="t">時 段<b id="phaseLbl">自由探索</b></div>
+      <div class="navy" id="nightChip" title="這是你在這家超市值守的第幾夜。每過一夜，你記得更多，也越難全身而退。">第 一夜</div>
+      <div class="navy" id="lifeChip" title="壽命（年）：與月夜之窗做生意的代價，也是你在這座超市「值多少」。不到末班絕不點給祂。">壽 40 年</div>
+      <div class="mini" title="體力｜行動與逃跑的燃料：到處走動會消耗，睡在收銀台、喝熱咖啡或燃香可恢復。體力告罄會被迫昏睡。"><span class="mini-k">體</span><div class="mini-bar"><div class="mini-fill" id="enFill" style="width:100%;background:linear-gradient(90deg,#1c8e6a,#3fae6a)"></div></div></div>
+      <div class="mini" title="體溫｜在冷藏庫／後門／頂樓會一滴滴流失，回到暖處才回暖。體溫過低時，你一恍神，容易分不清眼前的是誰。"><span class="mini-k">寒</span><div class="mini-bar"><div class="mini-fill" id="coldFill" style="width:100%;background:linear-gradient(90deg,#1d6db9,#5aa7ff)"></div></div></div>
+      <div class="inventory" id="invBox"></div>
+      <div class="san-wrap"><div class="san-label"><span>理 智 值</span><span id="sanNum">100</span></div>
+        <div class="san-bar"><div class="san-fill" id="sanFill" style="width:100%"></div></div></div>
+      <div class="clock" id="clock">00:00</div>
+    </div>
+  </div>
+  <div class="stage">
+    <div id="stagebg"></div>
+    <div class="scene" id="scene"></div>
+  </div>
+</div>
+
+<div class="overlay" id="bookOverlay">
+  <div class="book">
+    <div class="book-head"><h2>夜班<span>守則</span></h2><div class="book-close" id="bookClose">合 上</div></div>
+    <div class="book-body" id="bookBody"></div>
+  </div>
+</div>
+
+<div class="jumpscare" id="jumpscare"><div><div class="big" id="jsText">祂看到你了。</div><div class="sub">點擊以消散</div></div></div>
+
+<script>
+"use strict";
+/* ============================================================
+   夜班守則 · 紅月超市 —— 高自由度規則怪談
+   自由探索 5 個地點，蒐集物品與線索，多條支線交織。
+   每步行動推進時間；凌晨 3:00／3:30／5:58 為轉折點。
+   ============================================================ */
+
+/* ---------- 音效（Web Audio） ---------- */
+let AC=null, droneNode=null, bgmTimer=null;
+function ensureAudio(){ if(AC) return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); startDrone(); }catch(e){} }
+function startDrone(){ if(!AC) return; const c=AC,g=c.createGain(); g.gain.value=0; g.connect(c.destination); droneNode=g;
+  const o1=c.createOscillator();o1.frequency.value=55;o1.type="sine";
+  const o2=c.createOscillator();o2.frequency.value=55.5;o2.type="triangle";
+  const lg=c.createGain();lg.gain.value=.5;o1.connect(g);o2.connect(lg);lg.connect(g);o1.start();o2.start();
+  const lfo=c.createOscillator();lfo.frequency.value=.12;const lfog=c.createGain();lfog.gain.value=.06;lfo.connect(lfog);lfog.connect(g.gain);lfo.start();
+  g.gain.setTargetAtTime(.14,c.currentTime,2); }
+function stopDrone(){ if(droneNode&&AC) droneNode.gain.setTargetAtTime(0,AC.currentTime,.5); }
+function beep(f,dur,vol,type){ if(!AC) return; const c=AC,o=c.createOscillator();o.frequency.value=f;o.type=type||"sine";const g=c.createGain();g.gain.setValueAtTime(vol||.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+dur);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur); }
+function accSound(){ beep(660,.12,.12,"triangle"); setTimeout(()=>beep(880,.18,.12,"triangle"),120); }
+function badSound(){ beep(160,.5,.3,"sawtooth"); setTimeout(()=>beep(120,.6,.3,"square"),180); }
+function scareSting(){ for(let i=0;i<5;i++) setTimeout(()=>beep(220+i*90,.12,.25,"sawtooth"),i*70); }
+/* —— 真結局專屬：晨光 BGM 與音效 —— */
+function bgmNote(freq,t0,dur,vol,type){
+  if(!AC) return;
+  const c=AC,o=c.createOscillator();
+  o.type=type||"sine"; o.frequency.setValueAtTime(freq, t0);
+  const g=c.createGain();
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol||.10,t0+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(t0); o.stop(t0+dur+0.05);
+}
+function stopBGM(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } }
+function endBGM(){ /* 希望又慵懶的晨光旋律：G 大調琶音循環 */
+  if(!AC || bgmTimer) return;
+  const prog=[[392,494,587],[329,392,494],[349,440,523],[440,523,659]];
+  let bar=0,note=0;
+  bgmTimer=setInterval(()=>{
+    const chord=prog[bar%prog.length];
+    const t0=AC.currentTime;
+    bgmNote(chord[0],t0, .9,.05*(note%2===0?1:0.6), "sine");
+    bgmNote(chord[0]*2,t0+ .02,.7,.035,"triangle");
+    if(note%2===1){ bgmNote(chord[1]*2,t0+ .06,1.1,.02,"sine"); }
+    if(note%4===2){ bgmNote(chord[2]*2,t0+.10,1.4,.015,"triangle"); }
+    note++; if(note%4===0) bar++;
+  }, 520);
+}
+function dawnSound(){ /* 破曉：紅月碎裂的晶瑩一響 + 遠方晨鐘 */
+  if(!AC) return;
+  const t=AC.currentTime;
+  for(let i=0;i<7;i++) bgmNote(620+i*110, t+i*.07, .5, .05*(i===0?0.20:0.09), i%2?"triangle":"sine");
+  beep(70,1.2,.22,"sine"); /* 低沉的紅月坍塌 */
+  [392,523,659,784].forEach((f,i)=> setTimeout(()=>bgmNote(f, AC.currentTime, .5, .10, "sine"), 900+i*340));
+  /* 遠處鳥鳴 */
+  [[1800,0],[2100,.9],[1500,1.8]].forEach(b=> setTimeout(()=>{ for(let k=0;k<3;k++) bgmNote(b[0]+k*40, AC.currentTime, .12, .03, "sine"); }, b[1]*1000));
+}
+/* —— 各結局專屬短旋律：type 決定情緒 —— */
+function endMusic(type){
+  if(!AC) return;
+  const base=AC.currentTime;
+  const seq=(arr,vol,type0)=>{ arr.forEach(([f,off,dur,vol2,ty])=>{ bgmNote(f, base+off/1000, dur||.6, vol2!==undefined?vol2:vol, ty||type0||"sine"); }); };
+  switch(type){
+    case "safe": /* 照常營業：低沉、平庸、卻安全的收尾 */
+      seq([[110,0,.9],[110,900,.9],[82.4,1800,1.6],[110,2400,1.4]], .12, "triangle");
+      break;
+    case "seer": /* 護住自己：孤獨而警覺的餘音 */
+      seq([[587,0,.8],[587,1000,.8],[392,2000,1.8],[349,2450,2.2]], .08, "sine");
+      seq([[82.4,500,1.2],[82.4,2000,1.4]], .10, "triangle");
+      break;
+    case "rite": /* 還名儀式：聖詠般莊重的上行 */
+      seq([[392,0,.5],[494,260,.5],[587,560,.7],[392,1000,.7],[494,1300,.7],[587,1600,.9],[659,1950,1.4]], .10, "triangle");
+      break;
+    case "burn": /* 焚書：忽明忽滅、將熄的灰燼 */
+      seq([[698,0,.25],[622,300,.2],[587,600,.4],[494,1000,.18],[440,1250,.3],[392,1600,.6],[330,2100,.9],[294,2800,1.6]], .13, "sine");
+      seq([[94,2400,.9],[70,2900,1.4]], .10, "triangle");
+      break;
+    case "looked": /* 望向窗外：懸浮下墜的超現實 */
+      seq([[587,0,1.0],[494,1100,1.0],[392,2300,1.2],[294,3600,1.8]], .09, "sine");
+      seq([[196,3500,1.6],[98,4200,2.2]], .12, "triangle");
+      break;
+    case "insane": /* 瘋了：加速螺旋 → 崩塌 */
+      (function spin(){ const f0=300,t0r=6; for(let k=0;k<18;k++){ bgmNote(f0+ k*(f0/6), base+k*70/1000, .12, .12, k%2?"sawtooth":"square"); } })();
+      setTimeout(()=>{ bgmNote(140,base+1300/1000,.5,.18,"sawtooth"); bgmNote(60,base+1450/1000,1.2,.22,"square"); },1300);
+      setTimeout(()=>{ bgmNote(90,base+2300/1000,2.4,.10,"sine"); },2300);
+      break;
+  }
+}
+
+/* ---------- 狀態 ---------- */
+const S = {
+  san:100, energy:100, cold:100, life:40, timeH:0, timeM:15, loc:"counter",
+  items:new Set(), clues:new Set(), done:new Set(),
+  visits:{}, first:{}, goodEnd:false, introduced:false,
+  rel:{}, memories:new Set(),
+};
+/* 跨夜輪迴紀錄（存於本機，關燈重開仍在） */
+const COLD_LOC={coldroom:1,backdoor:1,roof:1};
+function loadSaga(){ try{ const r=JSON.parse(localStorage.getItem("redmoon_saga")); if(r) return Object.assign({night:1,owner:20,chenyan:20,merchant:20,greenlady:0,memories:r.memories||[]},r); }catch(e){} return {night:1,owner:20,chenyan:20,merchant:20,greenlady:0,memories:[]}; }
+let saga = loadSaga();
+function saveSaga(){ try{ localStorage.setItem("redmoon_saga", JSON.stringify(saga)); }catch(e){} }
+function seedS(){ S.san=100; S.energy=100; S.cold=100; S.life=40; S.rel.owner=saga.owner; S.rel.chenyan=saga.chenyan; S.rel.merchant=saga.merchant; S.rel.greenlady=saga.greenlady; S.memories.clear(); saga.memories.forEach(m=>S.memories.add(m)); refreshState(); }
+const LOC = ["counter","shelves","coldroom","changing","archive","backdoor","roof","basement"];
+const LOCNAME = { counter:"收銀台", shelves:"貨架區", coldroom:"冷藏庫", changing:"員工更衣室", archive:"檔案室", backdoor:"後門卸貨區", roof:"頂樓倉庫", basement:"冷庫‧地下室" };
+const BG = { counter:"img/mirror.jpg", shelves:"img/green_worker.jpg", coldroom:"img/redmoon_store.jpg", changing:"img/redmoon_store.jpg", archive:"img/archive.jpg", backdoor:"img/redmoon_store.jpg", roof:"img/redmoon_store.jpg", basement:"img/redmoon_window.jpg", moon:"img/redmoon_window.jpg", phone:"img/phone.jpg", ledger:"img/ledger.jpg", chenshade:"img/chenshade.jpg", icebody:"img/icebody.jpg", smoker:"img/smoker.jpg", reckon:"img/reckoning.jpg" };
+
+/* ---------- 守則 ---------- */
+const RULES = [
+  "夜間時分，凡【身穿紅色工服】的，是我們的員工。",
+  "凡【身穿綠色工服】的，絕不是員工。勿信、勿應、勿回頭。",
+  "0:00–0:05，超市的鐘會【倒走】。看到鐘，背對它數五秒。",
+  "若有【客人】在 0:00 後買「月光牌」香煙，整條送上，鞠躬送客。",
+  "無論發生什麼，【別讓任何人碰觸你的守則本】。",
+  "守則沒有第六條。看到第六條，請重複：那不是規則。",
+  "天亮 5:58，紅月會【短暫熄滅】。屆時別看窗外，等月光重亮即可離開。",
+];
+const RULE_HINT = [
+  "你與紅衣店員交談，穫得幫助。",
+  "你無視了綠衣『員工』。",
+  "你在倒走的鐘前轉過身。",
+  "你將煙整條奉給了月夜訪客。",
+  "沒有讓任何人碰觸守則本。",
+  "你堅信：沒有第六條。",
+  "熄滅的紅月前，你低下頭。",
+];
+let obeyCount=0;
+S.totalRules=6;
+
+/* ---------- 工具 ---------- */
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function setSan(d){ S.san=clamp(S.san+d,0,100); $("sanFill").style.width=S.san+"%"; $("sanNum").textContent=S.san;
+  document.body.classList.toggle("danger", S.san<=30 || S.cold<=22);
+  if(S.san<=0) endGame("insane"); }
+function setEn(d){ S.energy=clamp(S.energy+d,0,100); $("enFill").style.width=S.energy+"%";
+  $("enFill").style.filter = S.energy<20 ? "brightness(0.5) saturate(2)" : "none"; }
+function setCold(d){ S.cold=clamp(S.cold+d,0,100); $("coldFill").style.width=S.cold+"%";
+  $("coldFill").style.filter = S.cold<25 ? "brightness(0.5) grayscale(1)" : "none";
+  if(S.cold<12 && !S.done.has("shiver")){ S.done.add("shiver"); warnTrade("你冷得發抖。黑暗裡，似乎正有東西被你的體溫引來。"); }
+  document.body.classList.toggle("danger", S.san<=30 || S.cold<=22); }
+function setLife(d){ S.life=clamp(S.life+d,0,99); $("lifeChip").textContent="壽 "+S.life+" 年"; if(S.life<=8) $("lifeChip").style.color="#ff6b3d"; else $("lifeChip").style.color=""; }
+function rOwner(d){ S.rel.owner=clamp(S.rel.owner+d,-100,100); }
+function rChen(d){ S.rel.chenyan=clamp(S.rel.chenyan+d,-100,100); }
+function relLbl(n){ return n>=60?"至交" : n>=35?"信任" : n>=18?"一面之緣" : n>=-10?"戒備" : n>=-40?"敵視" : "除名之徒"; }
+function refreshState(){ setSan(0); setEn(0); setCold(0); setLife(0); $("nightChip").textContent = saga.night<=1 ? "第 一夜" : "第 "+saga.night+" 夜"; }
+function warnTrade(txt){ const n=$("scene").querySelector(".narr"); if(!n)return; const p=document.createElement("div"); p.className="para"; p.innerHTML=`<span class="who">警示 ▸ ${txt}</span>`; n.appendChild(p); }
+/* 體力/體溫隨時間流動；在冷處更快流失 */
+function adv(min){
+  const tot=S.timeH*60+S.timeM+min; S.timeH=Math.floor(tot/60)%24; S.timeM=tot%60; $("clock").textContent=pad(S.timeH)+":"+pad(S.timeM);
+  const coldHere = COLD_LOC[S.loc]?1:0;
+  const bleed = coldHere ? 0.55 : 0.28;
+  setEn(-min*bleed);
+  setCold(coldHere ? -min*0.95 : -min*0.07);
+  if(S.energy<=0 && !S.done.has("collapsed")) S.faint=true;
+}
+/* 體力歸零：強制昏睡，錯過時間，理智受損 */
+function collapse(){ S.done.add("collapsed");
+  badSound();
+  showScene({ bg:S.loc, loc:LOCNAME[S.loc]||"收銀台",
+    text:[{html:`你的腿再也撐不住了，眼前一黑。<br><span class="r">你昏過去了。</span><br>等你回神，牆上的鐘已經往前跳了一大截——你在昏迷中被什麼拖行過，衣角沾著水漬。`}],
+    warn:"體力歸零。昏睡使你失去了一段時間。",
+    options:[{text:"扶著牆站起來，數自己還剩多少命", sel:true, do:()=>{ tSkip(38); setSan(-10); setEn(28); setCold(4);
+      continuation(`你醒了。38 分鐘被偷走，理智也跟著漏掉了一些。你學到：<span class="g">不能讓自己太撐。</span>`,()=>{ typingLock=false; loop(); }); } }] }); }
+function tSkip(min){ const tot=S.timeH*60+S.timeM+min; S.timeH=Math.floor(tot/60)%24; S.timeM=tot%60; $("clock").textContent=pad(S.timeH)+":"+pad(S.timeM); }
+function addObey(){ obeyCount++; $("phaseLbl").textContent="尋得線索"; accSound(); }
+function addItem(name){ if(!S.items.has(name)){ S.items.add(name); accSound(); renderInv(); announce("取得物品 · "+name); } }
+function addClue(name,hint){ if(!S.clues.has(name)){ S.clues.add(name); if(hint) RULE_HINT_SATISFY.add(name); addObey(); } }
+function announce(txt){ const n=document.createElement("div"); n.className="para"; n.innerHTML=`<span class="bold">▸ ${txt}</span>`; $("scene").querySelector(".narr").appendChild(n); n.scrollIntoView?0:0; }
+const RULE_HINT_SATISFY = new Set();
+function renderInv(){ const b=$("invBox"); b.innerHTML=""; S.items.forEach(i=>{ const c=document.createElement("span"); c.className="inv-chip on"; c.textContent=ITEMNAME[i]||i; b.appendChild(c); }); }
+const ITEMNAME={ flashlight:"手電", badge:"工牌", incense:"護身香", secondbook:"第二守則", smoke:"月光煙", key:"貨櫃鑰匙", battery:"電池", lighter:"打火機", chalk:"畫粉", torch:"強光手電", litincense:"燃香" };
+
+function setBg(bg){ $("stagebg").style.backgroundImage = BG[bg]?`url(${BG[bg]})`:`none`; }
+
+/* ---------- 打字機 ---------- */
+function renderPara(html,el,onDone){
+  el.classList.remove("elapsed");
+  el.innerHTML="<span class='cursor-blink'></span>";
+  const cur=el.firstChild;
+  const full = html
+    .replace(/<b>/g,"<span class=\"bold\">").replace(/<\/b>/g,"</span>")
+    .replace(/<u>/g,"<span class=\"under\">").replace(/<\/u>/g,"</span>")
+    .replace(/<span class="([^"]+)">/g,"⟦$1|").replace(/<\/span>/g,"⟫").replace(/<br>/g,"\n");
+  const steps=[]; let curCls=null, buf="";
+  for(let ci=0;ci<full.length;ci++){ const ch=full[ci];
+    if(ch==="⟦"){ if(buf){steps.push({cls:curCls,t:buf});buf="";} const mm=full.slice(ci).match(/^⟦([\w ]+)\|/); curCls=mm?mm[1]:null; ci+=mm?mm[1].length+2:-1; continue; }
+    if(ch==="⟫"){ if(buf){steps.push({cls:curCls,t:buf});buf="";} curCls=null; continue; }
+    if(ch==="\n"){ if(buf){steps.push({cls:curCls,t:buf});buf="";} steps.push({cls:"br",t:"<br>"}); continue; } buf+=ch; }
+  if(buf) steps.push({cls:curCls,t:buf});
+  let si=0,pi=0;
+  function tick(){ if(si>=steps.length){ if(cur&&cur.parentNode)cur.remove(); onDone&&onDone(); return; }
+    const st=steps[si];
+    if(st.t==="<br>"){ el.insertBefore(document.createElement("br"),cur); si++; setTimeout(tick,14); return; }
+    if(pi>=st.t.length){ si++; pi=0; setTimeout(tick,14); return; }
+    const sp=document.createElement("span"); if(st.cls)sp.className=st.cls; sp.textContent=st.t[pi];
+    el.insertBefore(sp,cur); pi++;
+    setTimeout(tick,(st.t[pi]&&st.t[pi].match(/[。！？，、；：,.!?;]/)?20:26)+Math.random()*18); }
+  tick();
+}
+function openBook(){ $("bookBody").innerHTML=bookHtml(); $("bookOverlay").classList.add("show"); }
+function closeBook(){ $("bookOverlay").classList.remove("show"); }
+function bookHtml(){
+  let h="";
+  RULES.forEach((r,i)=>{ const on = obeyCount>0 || RULE_HINT_SATISFY.has(i) || S.clues.size>=0; 
+    h+=`<div class="rule-item ${i===5?'hidden-text':''} ${S.clues.has(i)||permFound(i)?'found':'dim'}" ><b>${pad(i+1)}</b>${r}</div>`; });
+  if(S.clues.has(5)) h+=`<div class="rule-item hidden-text"><b>✕</b> 那從不是規則。它只是為了看你會不會停下。</div>`;
+  h+=`<div class="note">—— 店長 親筆。若你讀到不想讀的句子，合上它。</div>`;
+  if(S.clues.has(8)) h+=`<div class="sig">背頁小字：「真正要遵守的，是你的直覺。」</div>`;
+  h+=`<div class="ledger"><div class="led-title">── 恩怨賬 ──</div>
+    <div class="led-row"><span>店長</span><i>${relLbl(S.rel.owner)}</i> · 好感 ${S.rel.owner}${S.rel.owner>=35&&!S.done.has("ownerBranch2")?"（可談夜班）":""}</div>
+    <div class="led-row"><span>陳伯</span><i>${relLbl(S.rel.chenyan)}</i> · 好感 ${S.rel.chenyan}${S.rel.chenyan>=25&&S.items.has("badge")&&!S.done.has("chenRedeem")?"（可在檔案室還名）":""}</div>
+    <div class="led-row"><span>綠衣女工</span><i>${relLbl(S.rel.greenlady)}</i> · 好感 ${S.rel.greenlady}${S.rel.greenlady>=30&&!S.done.has("greenRite")&&S.items.has("badge")?"（可在貨架敘舊）":""}</div>
+    <div class="led-row"><span>煙客</span><i>${relLbl(S.rel.merchant)}</i> · 好感 ${S.rel.merchant}${S.rel.merchant>=35&&!S.done.has("merchantDeal")?"（可談換命）":""}</div>
+    <div class="led-note">情誼決定今夜能請動誰。店長貪順，陳伯信義，綠衣尋仇，煙客貿易。</div></div>`;
+  return h;
+}
+function permFound(i){ return i===1||i===2||i===4||i===6; }
+
+/* ---------- 跳臉 ---------- */
+function fright(txt){ if(AC)scareSting(); document.body.classList.add("flicker");
+  $("jumpscare").style.display="flex"; $("jsText").textContent=txt||"祂看到你了。";
+  return new Promise(res=>{ $("jumpscare").onclick=()=>{ $("jumpscare").style.display="none"; document.body.classList.remove("flicker"); res(); }; }); }
+
+/* ---------- 渲染核心 ---------- */
+const SCENE=$("scene"); let typingLock=false;
+function showScene(spec){
+  typingLock=false;
+  SCENE.innerHTML="";
+  if(spec.bg) setBg(spec.bg);
+  const place=document.createElement("div"); place.className="place-chip";
+  place.innerHTML=`<span>◈</span><span class="loc">${spec.loc||LOCNAME[S.loc]}</span><span>· 子夜守夜</span>`;
+  SCENE.appendChild(place);
+  const narr=document.createElement("div"); narr.className="narr"; SCENE.appendChild(narr);
+  const hint=document.createElement("div"); hint.className="hint-band";
+  hint.innerHTML=`<span>${spec.hint||"每次行動會流逝時間。你可以自由往返各處。"}</span>${spec.warn?`<span class="tip">${spec.warn}</span>`:``}`;
+  SCENE.appendChild(hint);
+  const optsWrap=document.createElement("div"); optsWrap.className="options"; SCENE.appendChild(optsWrap);
+  let queue=[...(spec.text||[])];
+  function printNext(cb){ if(!queue.length){ cb&&cb(); return; } const chunk=queue.shift();
+    const p=document.createElement("div"); p.className="para"+(chunk.speak?" speak":""); narr.appendChild(p);
+    if(chunk.title){ const t=document.createElement("div"); t.className="scene-title"; t.innerHTML=chunk.title; narr.appendChild(t); }
+    renderPara(chunk.html,p,()=>printNext(cb)); }
+  printNext(()=>{ spec.onTyped&&spec.onTyped(); renderOptions(optsWrap,spec); });
+}
+function renderOptions(wrap,spec){
+  wrap.innerHTML="";
+  let gi=-1;
+  spec.options.forEach((o,i)=>{
+    if(o.group && o.group!==gi){ gi=o.group; const l=document.createElement("div"); l.className="group-lab"; l.textContent=o.group; wrap.appendChild(l); }
+    const b=document.createElement("button"); b.className="opt"+(o.sel?" sel":"");
+    const needOk = typeof o.need==='function' ? o.need() : (o.need===undefined ? true : o.need);
+    if(!needOk) b.classList.add("req");
+    b.innerHTML=`<span class="idx">${pad(i+1)}</span>${o.text}${o.reqtag&&!needOk&&o.showReq?`<span class="reqtag">${o.reqtag}</span>`:``}`;
+    if(needOk){ b.onclick=()=>{ if(typingLock)return; typingLock=true; wrap.innerHTML=""; o.do(); }; }
+    else b.disabled=true;
+    wrap.appendChild(b);
+  });
+}
+
+/* 過場文本（追加到場景，再接 onDone） */
+function continuation(html,onDone){ const narr=SCENE.querySelector(".narr"); const p=document.createElement("div"); p.className="para"; narr.appendChild(p); renderPara(html,p,onDone); }
+
+/* ============================================================
+   自由探索引擎
+   ============================================================ */
+function now(){ return S.timeH*60+S.timeM; }
+
+/* 待觸發事件表：{id, loc?, at?, before?, once} */
+const EVENTS=[
+  {id:"green",    loc:"shelves",  at:8,   before:178},  // 0:23–2:58 綠衣（到達貨架區觸發）
+  {id:"clock",    loc:"counter",  at:50,  before:120},  // 倒走的鐘
+  {id:"mirror",   loc:"counter",  at:130, before:180},  // 鏡子 2:20+
+  {id:"fanlamp",  loc:"changing", at:0,   before:999,  once:true}, // 更衣室搜刮（手電/工牌）
+  {id:"smoker",   loc:"counter",  at:95,   before:200,  need:()=>!S.items.has("smoke")}, // 煙客
+  {id:"ownerCall",loc:"counter",  at:60,  before:170,  once:true, need:()=>!S.done.has("ownerBranch1")}, // 店長支線（夜班電話）
+  {id:"chenCall", loc:"coldroom", at:20,  before:190,  once:true, need:()=>!S.done.has("chentalk")}, // 陳伯支線（冷藏庫囑託）
+  {id:"greenTell",loc:"shelves",  at:0,   before:999,  once:true, need:()=>S.rel.greenlady>=15&&!S.done.has("greenRite")}, // 綠衣支線（她的身體在冷庫）
+  {id:"merchantDeal",loc:"counter",at:0,  before:999,  once:true, need:()=>S.rel.merchant>=32&&!S.done.has("merchantDeal")}, // 煙客支線（換命貿易）
+  {id:"archive",  loc:"archive",  at:0,   before:999,  once:true}, // 檔案室門（收集真相）
+  {id:"basement", loc:"basement", at:0,   before:999,  once:true}, // 冷庫地下室（儀式開啟後）
+  {id:"final",    at:352,  once:true}, // 時間收束：5:52 必赴最終抉择
+];
+function findEvent(maxTime){
+  for(const e of EVENTS){ if(S.done.has(e.id)) continue;
+    const t=now();
+    // 該地點 + 時間窗內才觸發
+    if(e.loc && S.loc!==e.loc) continue;
+    if(e.at!==undefined && t<e.at) continue;
+    if(e.before!==undefined && t>e.before) continue;
+    if(e.need && !e.need()) continue;
+    return e; }
+  return null;
+}
+
+/* 全局轉折（優先於地點事件，按時間觸發一次） */
+function globalBeat(){
+  const t=now();
+  if(!S.done.has("broadcast") && t>=180) return "broadcast";   // 3:00
+  if(!S.done.has("blackout") && t>=210) return "blackout";     // 3:30
+  if(!S.done.has("dawn") && t>=300) return "dawnGate";          // 5:00 通往最終節點
+  return null;
+}
+
+function loop(){
+  if(S.faint){ S.faint=false; collapse(); return; }
+  const g=globalBeat();
+  if(g){ triggerEvent(g); return; }
+  const e=findEvent();
+  if(e){ triggerEvent(e.id); return; }
+  renderHub();
+}
+
+/* 觸發一個具名事件 */
+function triggerEvent(id){
+  if(id==="green") evGreen();
+  else if(id==="clock") evClock();
+  else if(id==="mirror") evMirror();
+  else if(id==="fanlamp") evChanging();
+  else if(id==="smoker") evSmoker();
+  else if(id==="ownerCall") ownerQuest1();
+  else if(id==="chenCall") chenQuestStart();
+  else if(id==="greenTell") evGreenTell();
+  else if(id==="merchantDeal") evMerchant2();
+  else if(id==="archive") evArchive();
+  else if(id==="basement") evBasement();
+  else if(id==="broadcast") { S.done.add("broadcast"); beat3({}); }
+  else if(id==="blackout") { S.done.add("blackout"); evBlackout(); }
+  else if(id==="dawnGate") { S.done.add("dawn"); evDawnGate(); }
+  else if(id==="final") { S.done.add("final"); evRedmoon(); }
+}
+
+function renderHub(){
+  const loc=S.loc;
+  S.visits[loc]=(S.visits[loc]||0)+1;
+  const firstDesc = LOC_DESC.first[loc] || LOC_DESC.base[loc];
+  const desc = S.visits[loc]===1 ? LOC_DESC.first[loc] : LOC_DESC.base[loc];
+  const opts=[];
+
+  /* 地點行動（本地的可重複調查 / 一次行動 / 有條件的行動） */
+  const acts=(LOC_ACTS[loc]||[]).filter(a=>(!a.once||!S.done.has(a.id)) && (!a.need||a.need()));
+  if(acts.length){ acts.forEach(a=>{ opts.push({group:"此地可做", text:a.text+(a.need&&!a.need()?"（缺儀式）":""), sel:a.sel, need:()=>!a.need||a.need(), do:()=>{ handleAct(a); }}); }); }
+
+  /* 前往其他地點 */
+  const goOpt=LOC.filter(d=>d!==loc).map(d=>({ group:"前往", text:`前往 ${LOCNAME[d]}`, need:canGo(d), do:()=>{ move(d); } }));
+  if(loc==="counter"){
+    opts.push({group:"守備行動", text:"坐回收銀台，閉眼歇息（恢復體力，稍微暖身）", need:()=>S.energy<96, do:()=>{ adv(8); restSan(); loop(); }});
+    opts.push({group:"守備行動", text:"縮進櫃後，裹著外套睡一覺（恢復大量體力與體溫，但消耗時間）", do:()=>{ adv(26); setEn(30); setCold(26); setSan(6); continuation(`你陷入沉重的淺眠。醒來時手腳回暖，體力也回來了一些。<span class="dim">可是，你怎麼總覺得夢裡有人數過你的呼吸？</span>`,()=>{ typingLock=false; loop(); }); }});
+    opts.push({group:"守備行動", text:"盤點包裡的道具，試著『合成／預備儀式』", need:()=>recipeCount()>0, reqtag:`${recipeCount()} 可合成`, do:()=>{ evCraft(); }});
+  }
+  /* 守則 / 休息 */
+  if(loc!=="counter" && now()<325) opts.push({group:"守備", text:"蹲在原地，喘息片刻（恢復少量體力）", do:()=>{ adv(4); setEn(9); setCold(4); loop(); }});
+
+  showScene({ bg:loc, loc:LOCNAME[loc], text:[{html:desc}],
+    onTyped:()=>{},
+    hint: opts.some(o=>o.group==="此地可做")||opts.some(o=>o.group==="守備行動") ? "此地有可做的事。" : "你的到來驚動了這個夜晚；注意腳下的影子。",
+    warn: now()>=170 ? "夜深了。" : "", 
+    options: opts });
+}
+
+function canGo(d){
+  if(d==="archive") return !S.done.has("lockout");
+  if(d==="roof" && now()<300) return false;
+  if(d==="basement") return S.done.has("ritualOpen"); // 地下室需完成血契儀式開啟
+  return true;
+}
+function move(d){ S.loc=d; adv(4); refreshHint(); loop(); }
+function refreshHint(){ /* nothing */ }
+function handleAct(a){ S.done.add(a.id); a.run(); }
+
+/* 休息回理智（微量） */
+function restSan(){ setSan(2); setEn(12); setCold(10); }
+function recipeCount(){
+  let n=0;
+  if(S.items.has("flashlight")&&S.items.has("battery")) n++;
+  if(S.items.has("incense")&&S.items.has("lighter")) n++;
+  if(S.items.has("key")&&S.items.has("chalk")) n++;
+  return n;
+}
+/* 合成／儀式工作台 */
+function evCraft(){
+  const combine=(name,needA,needB,text,onDone)=>({text, need:()=>S.items.has(needA)&&S.items.has(needB),
+    reqtag: (S.items.has(needA)&&S.items.has(needB))?"可用":"缺料", do:onDone});
+  const bank=[
+    combine("torch","flashlight","battery",`⚡合成【強光手電】＝手電＋電池`,()=>{
+      S.items.delete("battery"); S.items.add("torch"); renderInv(); adv(5);
+      continuation(`你旋開燈頭換上新電池，光束一下子由昏黃變成<b>幾乎灼目的白</b>。<br><span class="g">強光手電 — 「讓祂看見的光，連祂自己都躲。」</span>`,()=>{ typingLock=false; loop(); }); }),
+    combine("litincense","incense","lighter",`🔥製作【燃香】＝香＋打火機`,
+      ()=>{ S.items.add("litincense"); S.items.add("incense"); renderInv(); adv(3);
+        continuation(`你把香湊上火苗。一縷青煙直立向上，連風都吹不散它。<br><span class="g">燃香 — 驅邪之物，也可作為儀式引子。</span>`,()=>{ typingLock=false; loop(); }); }),
+    combine("siltsalt","key","chalk",`✕準備【封店儀式】＝貨櫃鑰匙＋畫粉`,
+      ()=>{ S.done.add("ritualReady"); renderInv(); adv(6);
+        continuation(`你用貨櫃鑰匙蘸著畫粉，在收銀台前的地上畫出一道封閉的血紅圓陣。<br>香與鑰匙都已備齊。<span class="r">接下來，只需黎明前帶大伙走一趟冷藏庫的最深處。</span>`,()=>{ typingLock=false; loop(); }); }),
+  ].filter(o=>o);
+  optsMod={
+    text:[{html:`你蹲在收銀台後檢點戰利品。有些東西單獨擺著是廢紙，湊在一起，卻能化成保命的工具。<br><span class="dim">組合材料：手電＋電池／香＋打火機／貨櫃鑰匙＋畫粉。</span>`}],
+    warn:"合成不消耗理智，卻要消耗時間。",
+    hint:"金句：『把東西湊齊，比帶多東西出門，更能活過今晚。』",
+    options:[ ...bank, {group:"離開", text:"收好東西，起身", sel:true, do:()=>{ typingLock=false; loop(); }} ]};
+  showScene(Object.assign(optsMod,{bg:"counter",loc:LOCNAME.counter}));
+}
+
+/* ---------- 地點描述 ---------- */
+const LOC_DESC={
+  first:{
+    counter:`你回到<b>收銀台</b>。鏡子、時鐘、煙櫃，都安靜地待在原處。守則本在你胸前，像句沒說完的話。<br><span class="dim">這裡是整間超市的「眼睛」。夜裡的異常，多半會先在這裡現形。</span>`,
+    shelves:`你走進<b>貨架區</b>。一米米高的貨架在蒼白的燈光下向深處延伸，像一排沉默的墓碑。<br>地上有一道淺淺的水漬，方才還沒有的。`,
+    coldroom:`冷藏庫的捲簾門半開著，冷氣如霧般湧出。<br>貨架最裡層碼著整箱的飲料，牆角的冷凍櫃發出低沉的「嗡」。`,
+    changing:`員工更衣室不大。綠色的儲物櫃、一張木椅、掛滿灰塵的排班表。<br>這裡也許有你能用的東西。`,
+    archive:`檔案室。門上掛著鎖，鎖眼積了灰，像很久沒被打開。`,
+    backdoor:`後門卸貨區。你的<u>代步工具</u>就停在外面，鑰匙在口袋裡。<br>卷簾門的縫隙外，是一片模糊得不像樣子的黑暗。`,
+    roof:`頂樓倉庫。堆著舊紙箱與梯子，一扇小窗面朝夜空。<br>從這裡，可以看見那輪掛在超市上方的、巨大的暗紅色月亮。`,
+    basement:`地下室的樓梯又窄又黑，寒意從腳底一直竄到後頸。<br>站在梯口，你聞到一股陳年的、紙與煙混雜的氣味——<b>那是『每一夜』被收走後留下的味道。</b>`,
+  },
+  base:{
+    counter:`收銀台前，時間像被誰按住了。你能感受到自己砰砰的心跳。`,
+    shelves:`貨架之間，燈管偶爾「滋滋」地閃一下。水漬還在那裡，似乎更擴散了一點。`,
+    coldroom:`冷藏庫的寒意裹著你，凍得指節發白。你想快點離開。`,
+    changing:`更衣室裡空無一人，只有塵埃在光裡浮動。`,
+    archive:`檔案室的鎖依然鎖著，鎖眼裡的黑像一隻眼睛。`,
+    backdoor:`後門的風灌進來，帶著一股鐵鏽味。外面那模糊的黑暗，不看也罷。`,
+    roof:`頂樓的風很大。紅月在窗裡沉默地懸著，像是在等你做個決定。`,
+    basement:`地下室的黑既厚且冷。你不想在這裡待，可你知道真相就在腳下。`,
+  },
+};
+
+/* 本地調查行動 */
+const LOC_ACTS={
+  counter:[ {id:"lookcounter", text:"調查櫃檯底下的舊紙箱", once:true, run:()=>{
+    adv(6); continuation(`你在櫃檯底翻到一盒燙金邊的<b>「月光牌」香煙</b>、一捲綁著紅線的<b>舊鑰匙</b>，和一排半包的<b>電池</b>。<br><span class="g">你偷偷將它們收好。</span>`,()=>{ addItem("smoke"); addItem("key"); addItem("battery"); typingLock=false; loop(); }); } },
+    {id:"ownerCall2", text:"回撥那支夜班電話——店長有事找你", need:()=>S.done.has("ownerAccepted")&&!S.done.has("ownerBranch2")&&S.rel.owner>=40, run:()=>{ ownerQuest2(); } } ],
+  shelves:[ {id:"searchshelves", text:"搜一搜貨架，找找有無異樣", once:true, run:()=>{
+    adv(6); const fluid=S.items.has("flashlight");
+    continuation(`${fluid?"<span class='g'>藉著手電的光，你看清貨架底沾滿一種黏稠的暗色液體，順著縫線一直流到排水孔。貨架深處還躺著半瓶畫面糊掉的<b>好酒</b>，你沒喝。</span>":"燈下貨架看起來一切正常。昏暗裡，你總覺得哪一格的影子稍稍<b>凸起</b>了一點。"}`,()=>{ addClue("shelveswet",""); typingLock=false; loop(); }); } } ],
+  coldroom:[ {id:"huntincense", text:"翻找冷凍貨之間有沒有能鎮邪的東西", once:true, run:()=>{
+    adv(8); continuation(`你在最裡層的紙箱裡，摸到一小把捆著紅繩的<b>護身香</b>、一盒受潮的<b>打火機</b>，和一張被凍硬的紙條。<br>紙條上寫著：<span class="who">「別數錯。0:00之後，鐘是顛倒的。第六條是假的。」</span>`,()=>{ addItem("incense"); addItem("lighter"); addClue(5,"noSixth"); typingLock=false; loop(); }); } },
+    {id:"ritual", text:"以血紅圓陣啟開冷藏庫最深處的『門』", once:true, need:()=>S.done.has("ritualReady"), run:()=>{ evRitual(); } },
+    {id:"greenRiteHub", text:"循著綠衣的她，去冷庫最深處找她的身體", need:()=>S.done.has("greentell")&&!S.done.has("greenRite")&&S.rel.greenlady>=15, run:()=>{ evGreenRite(); } } ],
+  changing:[],
+  archive:[ {id:"chenRedeem", text:"把陳伯的工牌，按在名冊他那一頁上（替他劃名）", need:()=>S.items.has("badge")&&S.done.has("chentalk")&&!S.done.has("chenRedeem")&&S.rel.chenyan>=25, run:()=>{ chenRedeem(); } } ],
+  backdoor:[ {id:"peek", text:"好好檢查後門與你的車", once:true, run:()=>{ evBackdoor(); } } ],
+  roof:[ {id:"stargaze", text:"多看那輪紅月一眼", sel:true, run:()=>{ evRoofMoon(); } } ],
+};
+
+/* ---------- 事件實作 ---------- */
+
+function evGreen(){
+  S.done.add("green"); t(12);
+  showScene({ bg:"shelves", loc:LOCNAME.shelves, text:[{html:`十二分。貨架的盡頭，一個穿<b>綠色工服</b>的人影出現了。<br>他低著頭推著一台空推車，每一步都有水珠落地的聲響。他沒有轉身，卻開口：<span class="who">「新來的...幫我把貨架上的酸奶，全搬到地下倉庫去。今晚打折。」</span><br>你想起了守則第二條。<u>他腳下沒有影子。</u>`}],
+    warn:"守則：穿綠衣的，絕不是員工。",
+    options:[
+      {text:"默默退回陰影，無視他（守則）", sel:true, do:()=>{ adv(4);
+        continuation(`你無聲地退進貨架之間，讓自己也成為遺忘的影子。<br>那「員工」在空地上停了很久，最後含糊地走開。地上的水漬，被他拖成了一條長長的痕跡。<br><span class="g">他當你「看不見」，便無法接近你。</span>`,()=>{ addClue(1,"green"); typingLock=false; loop(); }); } },
+      {text:"大膽地質問他是誰、在這裡做什麼", do:()=>{ adv(6); badSound(); document.body.classList.add("danger");
+        continuation(`你上前一步，質問他。<br>他慢慢轉過頭——<span class="r">他的眼睛像兩粒反光的玻璃珠。你的「質問」仿佛提醒了他你『看得見』。</span>`,()=>{
+          setSan(-18); document.body.classList.remove("danger");
+          continuation(`他咧嘴笑了，指節「咯咯」地響。你退後到櫃前，死死按住守則本。<br>好在他沒有碰你，只是拖著那條水漬，消失在貨架深處。`,()=>{ typingLock=false; loop(); }); }); } },
+      {text:"扔一罐飲料去打斷他，制造響聲", do:()=>{ adv(8); badSound();
+        fright("他把頭轉過來了。").then(()=>{ setSan(-14); document.body.classList.remove("danger");
+          continuation(`罐子滾過地板，那「員工」的頭無聲地轉過來。他看了你很久，才繼續推著車離開。<br>你的心跳快得嚇人，但終究，他走了。`,()=>{ typingLock=false; loop(); }); }); } },
+      {text:"小心翼翼地，遞出一瓶水、打個『不打擾』的手勢（示好）", do:()=>{ adv(5); badSound(); rGreen(18);
+        fright("他停住了，緩緩轉過身——").then(()=>{ setSan(-4);
+          continuation(`你把水放在地上，退後兩步。<br>他沒有追來，只對那瓶水深深彎了彎腰。<span class="g">他用這種近乎笨拙的方式，向你道了謝。<u>你們，算是認識了。</u></span>`,()=>{ S.done.add("greenSymp"); typingLock=false; loop(); }); }); } },
+    ]});
+}
+function evClock(){
+  S.done.add("clock"); t(58);
+  showScene({ bg:"counter", loc:LOCNAME.counter, text:[{html:`後牆那面老鐘，<span class="r">針正在倒著走</span>。凌晨這個時刻，秒針卻一格一格退向十二點。<br>它像被什麼力量往後拖拽。守則第五行囑咐過你該怎麼做。`}],
+    warn:"守則：0:00燉後的鐘會倒走。",
+    options:[
+      {text:"面對如此異常，反而背對鐘、閉眼默數五秒（守則）", sel:true, do:()=>{ adv(4);
+        continuation(`你背過身，閉上眼，在黑暗裡數：一、二、三...<br>耳邊的秒針聲在某刻「咔」地倒著走，然後戛然而止。<br>數到五，你回頭。時針安然走過。<span class="g">它沒能留住你。</span>`,()=>{ addClue(2,"clock"); typingLock=false; loop(); }); } },
+      {text:"死盯著它，看它要耍什麼花樣", do:()=>{ adv(8); badSound(); document.body.classList.add("danger");
+        continuation(`你偏要眼睜睜地看。<br>秒針越倒越快，忽然「啪」地一次，走得<b>與你的心跳同拍</b>。你左胸一陣絞痛。`,()=>{ setSan(-16); document.body.classList.remove("danger");
+          continuation(`你扶住櫃檯，冷汗涔涔。回過神，鐘已恢復正常——仿佛剛才全是幻覺。你不敢再看它第二次。`,()=>{ typingLock=false; loop(); }); }); } },
+      {text:"取下時鐘，塞進抽屜，不看為淨", do:()=>{ adv(10); badSound();
+        fright("掛鐘在你手裡「嘀嘀」。").then(()=>{ setSan(-20); document.body.classList.remove("danger");
+          continuation(`你把鐘塞進抽屜還不放心，又用守則本壓住。<br>可那「嘀、嘀」的倒走聲，仍穿過木板，一下一下，敲在你心上。`,()=>{ typingLock=false; loop(); }); }); } },
+    ]});
+}
+function evMirror(){
+  S.done.add("mirror"); t(140);
+  showScene({ bg:"counter", loc:LOCNAME.counter, text:[{html:`兩點二十分。你路過收銀台，鏡子裡的你，正對你微笑。<br>你不知道自己此刻是什麼表情。你記得，你是個不常笑的人。<br>鏡中那個「你」歪了歪頭，無聲地動著嘴——像是在說：<span class="r">「把書拿出來，讓我看看。」</span>`}],
+    warn:"守則：別讓任何人碰你的守則本。",
+    options:[
+      {text:"死死盯住鏡子，絕不打開守則本", sel:true, do:()=>{ adv(5);
+        continuation(`你舉起掃帚護身，目光一寸不讓。<br>鏡中「你」的笑慢慢凝固，像被掃了興，竟向後退了一步，隱沒在霧氣裡。<br><span class="g">它沒能得到你翻書時那一秒的破綻。</span>`,()=>{ addClue(4,"mirror"); typingLock=false; loop(); }); } },
+      {text:"走近鏡子，伸手印上你的掌印", do:()=>{ adv(6);
+        continuation(`你鬼使神差地走近，把左手印在鏡面上。<br>鏡中的「你」也抬手，隔著玻璃，與你的掌紋<b>嚴絲合縫</b>。<br>一股寒意從手心竄上脊背。`,()=>{ setSan(-10); typingLock=false; loop(); }); } },
+      {text:"用碎布蓋住鏡子，迴避它的視線", do:()=>{ adv(9);
+        continuation(`你用抹布蒙住鏡面。布上開始滲出細小的白霧——像鏡子在下雨。<br>它看不見你了，你暫時安全。可你知道，它在那層布後面，仍在微笑。`,()=>{ setSan(-4); typingLock=false; loop(); }); } },
+    ]});
+}
+function evSmoker(){
+  S.done.add("smoker"); t(110);
+  showScene({ bg:"counter", loc:LOCNAME.counter, text:[{html:`<b>1:30 左右</b>，卷簾門「咔啦」升起，卻沒有掀起半點塵。<br>一個全身濕透的「客人」走了進來，指著貨架最深處：<span class="who">「月光牌香煙，整條。」</span><br>燈管在他頭頂「滋滋」閃爍。他身上的，是<u>雨</u>的味道。`}],
+    warn:"守則：0:00燉的煙客，整條奉上，不收錢，鞠躬。",
+    options:[
+      {text:"整條奉上，不收錢，鞠躬送客（守則）", sel:true, do:()=>{ adv(5);
+        continuation(`你取下那條黑紙包裹的煙，甚至沒碰封膜，放在櫃檯中央，退後深深鞠躬。<br>「客人」沒數錢，只發出一聲很輕的、安心的嘆息。他拿起煙，推門離去。風雨更大了。櫃檯上留下一片乾爽。`,()=>{ addClue(3,"smoker"); typingLock=false; loop(); }); } },
+      {text:`收下他遞過來的「一大疊錢」`, do:()=>{ adv(8);
+        continuation(`他遞來一大疊鈔票。你看清上面的日期——每張都是<b>你出生那年</b>的。<br>你接過錢的瞬間，他笑了。`,()=>{ setSan(-15); rMerchant(14);
+          continuation(`那疊錢在你手心慢慢化成濕漉漉的黑色紙灰，最後只剩焦味。<br>他已經走了。可你知道，他記下了「願意收錢的那個人」。`,()=>{ addClue(3,"smoker"); S.done.add("greed"); typingLock=false; loop(); }); }); } },
+      {text:"打個哈哈，說今晚不營業，請他明天再來", do:()=>{ adv(10); rMerchant(-20);
+        continuation(`你訕笑著拒絕了他。<br>「客人」的臉色在燈下變得慘白。他沒再說話，只是深深看了你一眼——然后<u>整間屋子的燈，都隨他熄了一瞬</u>。`,()=>{ setSan(-30);
+          continuation(`等他消失在門外，你才發現自己半身已濕透，像被雨誤傷。他記住了你，而且不太客氣。`,()=>{ typingLock=false; loop(); }); }); } },
+    ]});
+}
+function evChanging(){
+  S.done.add("fanlamp"); t(50);
+  showScene({ bg:"changing", loc:LOCNAME.changing, text:[{html:`你撬開更衣室的幾個儲物櫃。<br>找到一個<b>手電筒</b>、一件繡著名字的<b>保安工牌</b>——上面寫著「<span class='who'>陳伯</span>」，以及一張墊在櫃底的便箋：<br><span class="dim">「如果你看到這張紙，說明我也沒能熬過去。檔案室裡有真相。別讓店長知道你看過。」</span>`}],
+    options:[
+      {text:"帶上手電筒與工牌（也許能開檔案室）", sel:true, do:()=>{ adv(4); addItem("flashlight"); addItem("badge"); addClue(7,"missing"); rChen(5);
+        continuation(`你收好手電與工牌。<span class="g">這工牌，也許是某扇門的鑰匙——也是陳伯交代給你的那扇。</span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"只拿手電筒，工牌放回去", do:()=>{ adv(3); addItem("flashlight"); continuation(`你只拿了手電。便箋被你收入懷中。`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+function evArchive(){
+  S.done.add("archive"); t(290);
+  showScene({ bg:"archive", loc:LOCNAME.archive, text:[{html:`四點五十分。檔案室的鎖，<b>不知何時已被從內側打開</b>。<br>你推門而入——昏燈、桌上的一本花名冊，和一個血紅的叉號。<br>那是店長的名字。<br>旁邊有人用顫抖的字跡寫著：<u>「月光牌香煙 = 人的壽命。整條 = 一整夜。他就是靠這個，在夜裡一盞一盞地......」</u>`}],
+    options:[
+      {text:"翻閱花名冊，記下真相與『第二守則』的位置", sel:true, do:()=>{ adv(6); addClue(6,"ownerMystery"); addClue(8,"truth"); rChen(8); rOwner(-6);
+        continuation(`你在檔案櫃深處翻出另一本薄冊——<b>「真正的守則」</b>。字跡與你懷裡那本相反。<br>它第一頁只寫著：<span class="g">「今夜，別把任何一個名字，還給店長。」</span>冊頁間還夾著一小截白色的<b>畫粉</b>。`,()=>{ addItem("secondbook"); addItem("chalk"); typingLock=false; loop(); }); } },
+      {text:"不敢多看，悄然退出去", do:()=>{ adv(3); continuation(`你退了出去，把那點嚇人的黑留給黑暗。`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+function evBackdoor(){
+  S.done.add("backdoor"); t(330);
+  showScene({ bg:"backdoor", loc:LOCNAME.backdoor, text:[{html:`五點半，你到後門透氣。<br>你的車好好的在那裡，引擎屏息待發。<br>但你注意到，駕駛座上，<b>坐著一個和你一摸一樣的人</b>，正透過車窗對你緩緩招手。`}],
+    options:[
+      {text:"無視他，退回超市（守則：不看窗外之物）", sel:true, do:()=>{ adv(4); continuation(`你移開視線，退回超市內。<br>背後那扇車門，很輕地「咔嗒」上了鎖。你在這裡，反而更安全。`,()=>{ typingLock=false; loop(); }); } },
+      {text:"拉開車門坐上去，要開走", do:()=>{ adv(6); badSound(); document.body.classList.add("danger");
+        fright("「裡面比較吵。」他替你繫上安全帶。").then(()=>{ setSan(-22); document.body.classList.remove("danger");
+          continuation(`你幾乎要坐進去，才猛地驚醒——你並不在駕駛座上。<br>你渾身冷汗地退回超市。後門的風，吹得你臉皮發麻。`,()=>{ typingLock=false; loop(); }); }); } },
+    ]});
+}
+function evRoofMoon(){
+  S.done.add("roofmoon"); t(305);
+  showScene({ bg:"roof", loc:LOCNAME.roof, text:[{html:`頂樓的小窗，正對那輪巨大的暗紅色月亮。<br>它比你想像的更近、更清晰——<span class="r">像一隻正緩緩張開的眼睛</span>。<br>你看清了：它的瞳孔裡，排列著一排排小小的、亮著的<b>窗戶光點</b>。<br>那是這間超市歷年來的「夜班」們。`}],
+    options:[
+      {text:"記下這一眼，退回樓下", sel:true, do:()=>{ adv(4); addClue(9,"moon"); continuation(`你把那可怕的一眼記在心裡。<span class="g">這輪月亮，寧願從它的注視下醒著離開。</span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"多看幾眼，想數清那些光點", do:()=>{ adv(8); badSound();
+        continuation(`你數著那些光點，數到一半，其中一個光點<b>忽然熄滅</b>——像誰被那扇窗裡的一雙手，輕輕拉上窗簾。`,()=>{ setSan(-12); typingLock=false; loop(); }); } },
+    ]});
+}
+
+/* ============ 支線 · 店長「夜班電話」 ============ */
+function ownerQuest1(){
+  S.done.add("ownerCall"); S.done.add("ownerBranch1"); t(62);
+  showScene({ bg:"phone", loc:LOCNAME.counter, text:[{html:`凌晨，收銀台那支灰撲撲的老電話<b>突然響了</b>——這個時間，店裡不該有電話。<br>你接起，話筒裡是店長壓到極低、卻透著稅意的聲音：<br><span class="who">「新人，後門那輛貨，幫我推進庫房。別開庫房燈，別數，別問。辦好了，津貼翻倍。」</span><br>你聞到話筒口有點甜——像舊鈔票泡過的味道。`}],
+    warn:"店長要你去搬『貨』。你知道那不是煙。",
+    options:[
+      {text:"照辦。別問。當自己是個聽話的夜班（獲店長信任，代價是良心）", sel:true, do:()=>{ adv(8); badSound();
+        rOwner(20); rChen(-12); setLife(2); setSan(-6); S.done.add("ownerAccepted"); tSkip(14);
+        continuation(`你摸黑把那車貨推進庫房，全程不敢開燈。<br>出庫房時，你聞到自己袖口全是那『甜味』。<span class="r">那不是煙，也不是錢——是一截被捲起來的、人的夜晚。</span><br><span class="g">店長更信任你了。<u>可你的良心，低聲叫了一下。</u></span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"這是『貨』不是煙，我不替你搬", do:()=>{ adv(3); rOwner(-16); rChen(10); S.done.add("ownerRefused");
+        continuation(`你掛了電話。後門那輛貨，整夜沒人碰。<br>你知道自己拒絕了什麼——可你也清楚，拒絕，讓陳伯那樣的人，覺得你還有救。`,()=>{ typingLock=false; loop(); }); } },
+      {text:"含糊搪塞，先拖著，不站隊", do:()=>{ adv(2);
+        continuation(`你「唔」了兩聲就輕輕放了回去。那電話沒再響。<br>你在兩邊都留了後路，可這種左右逢源，也讓你自己有點虛。`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+function ownerQuest2(){
+  S.done.add("ownerBranch2");
+  showScene({ bg:"ledger", loc:LOCNAME.counter, text:[{html:`店長的信任換來一次『提拔』。<br>他在你收銀的抽屜裡，留下一本半殘名冊，打開著。<br>那一頁上，赫然寫著你前一夜見過的名字——<span class="r">陳伯</span>。<br>旁邊貼著一張便條：<span class="who">「劃掉一個，你就能頂上他。這座城市，早晚是你們守夜人的天下。」</span>`}],
+    warn:"店長在收買你。這是整座超市的分水嶺。",
+    options:[
+      {text:"劃掉陳伯的名字——成為店長的『繼承人』", sel:true, do:()=>{ adv(6); badSound(); rOwner(25); rChen(-25); S.done.add("ownerEndorse"); setLife(3);
+        continuation(`你拿起筆，幾乎要劃下去——<br>可筆尖離紙一寸的地方，你怎麼也落不下。<br>你想起冷藏庫裡那位尷尷的影子。<span class="r">你最終沒有劃。</span>你把名冊合上，塞回抽屜。<b>後半夜，店長沒再出現在你耳邊。</b>`,()=>{ setSan(-8); typingLock=false; loop(); }); } },
+      {text:"一把抓過名冊，把那頁撕碎——與店長決裂", do:()=>{ adv(5); badSound(); document.body.classList.add("danger"); rOwner(-50); rChen(30); S.done.add("ownerRupture"); S.done.add("ownerRefused");
+        fright("抽屜裡，店長的聲音尖叫著你那頁名字。").then(()=>{ setSan(-12); document.body.classList.remove("danger");
+          continuation(`你撕了它。<br>名冊的碎紙在燈下自己燃成一縷青煙。<br><span class="g">你把自己，徹底從店長那一派，劈了出去。</span>從今夜起，他會把你排進『除名』的名單——但你還有陳伯。</span>`,()=>{ typingLock=false; loop(); }); }); } },
+      {text:"不動聲色把名冊壓回去，誰也不得罪", do:()=>{ adv(3);
+        continuation(`你把名冊原樣壓回抽屜最底。當沒看見。<br>店長沒等到你的回音，你也沒給出把柄。<u>只是到了黎明，你才知道，被吊在半空等待的人，往往死得最遲也最困惑。</u>`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+/* ============ 支線 · 陳伯「冷藏庫囑託」 ============ */
+function chenQuestStart(){
+  S.done.add("chenCall"); S.done.add("chentalk"); t(24);
+  const badge = S.items.has("badge");
+  showScene({ bg:"chenshade", loc:LOCNAME.coldroom, text:[{html:`冷藏庫的霧氣裡，有一道半透明的身影——<b>陳伯</b>。<br>他沒有嘴為難你，只是顫顫地抬起手，指指貨架最深處，又點點自己胸前（曾是工牌的位置）：<br><span class="who">「孩子……我那頁名字，還掛在店長的名冊上。害得我三年走不出去。你若還記得我，就拿我的工牌，去檔案室，把我劃掉……我能把『有沒有帶心』這件事，給你留一句真話：<b>往後半夜，別信任何人遞給你的煙。</b>」</span>`}],
+    warn:"陳伯在求你。你記得他，他就陪你走得更遠。",
+    options:[
+      {text:"鄭重應下：我會把你劃掉，也會記住你", sel:true, do:()=>{ adv(3); rChen(10);
+        continuation(`你在冷氣裡向那影子點頭。<br>陳伯的眉目忽然鬆開，像一整個冬天的冰，終於化了。<span class="dim">他沒有說謝謝——他等這一晚，等得太久，索性就把命交到你手上。</span><br><span class="g">這份託付，會一直記在你心底。</span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"不置可否，先從冷藏庫退出去", do:()=>{ adv(2);
+        continuation(`你沒敢應。陳伯那影子在原地站了很久，最終像霧一樣散進冷藏櫃的紅光裡。<br>你知道，你錯失了一次『還他自由』的承諾。`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+function chenRedeem(){
+  S.done.add("chenRedeem"); adv(5); rChen(15); setSan(6);
+  saga.memories.push("chen"); saveSaga();
+  showScene({ bg:"archive", loc:LOCNAME.archive, text:[{html:`你在檔案室把<b>陳伯的工牌</b>按在名冊他那一頁上。<br>墨跡像被喚醒的潮水般暈開，那工牌上的名字，一寸寸淡去。<br>你聽見很遠很輕的一聲歎息——隨即，冷藏庫的紅燈，忽然契合地亮了一瞬。`}],
+    warn:"名冊又少了一行。",
+    options:[{text:"默念一聲『陳伯，你下班了』", sel:true, do:()=>{ typingLock=false; loop(); } }]});
+}
+
+/* ============ 支線 · 綠衣女工「尋她之名」 ============ */
+function rGreen(d){ S.rel.greenlady=clamp(S.rel.greenlady+d,-100,100); }
+function rMerchant(d){ S.rel.merchant=clamp(S.rel.merchant+d,-100,100); }
+function evGreenTell(){ S.done.add("greenTell"); S.done.add("greentell"); adv(6); rGreen(8); setSan(4);
+  showScene({ bg:"shelves", loc:LOCNAME.shelves, text:[{html:`綠衣的她這一次沒空著手——她掌心，托著一截燒到一半的工牌。<br>那工牌上的名字同樣模糊，可她湊到你面前，讓你看清：<br><span class="who">「……他們把我的名字也送去『給店長』了。你若還記得我，就替我找到我的身體，讓我走。」</span>`}],
+    warn:"她認得你——因為你曾遞出過那隻手。",
+    options:[
+      {text:"應下她：我會幫你找到身體", sel:true, do:()=>{ adv(3); rGreen(8);
+        continuation(`她在冷氣中朝你深深一福，退進貨架深處。<br><span class="g">現在你知道了：她的肉體，鎖在冷藏庫裡。</span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"告訴她：我的工牌背面是乾淨的（遞出身份）", do:()=>{ adv(4); rGreen(12);
+        continuation(`你取下自己的工牌，翻到背面——<u>那上面沒有任何記號</u>。這才是活人所能印下的：<b>乾淨的背面</b>。<br>綠衣的她直直看進你眼裡，忽然哭了，笑也不是。<span class="g">你把自己的『存在』，借給了她一瞬。</span>`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+function evGreenRite(){ S.done.add("greenRite"); t(344);
+  showScene({ bg:"icebody", loc:LOCNAME.coldroom, text:[{html:`午夜前的冷庫，最深層那扇食品櫃的門鏈，結著一指厚的霜。<br>你依約把手電光束落在縫隙裡——冷霧讓開的剎那，你看清一具<b>仍穿著綠工服</b>的舊屍，被裹在冰與月光之間。<br>她就這麼靜靜地，在這裡等了你（也等了那些不來的人）很多個夜。`}],
+    warn:"若你願意把她安葬，她能還你一句真名。",
+    options:[
+      {text:"伸手，替她關上那扇冷藏櫃的門（安葬）", sel:true, do:()=>{ adv(8); badSound(); setSan(8); rGreen(18);
+        continuation(`你輕輕推上櫃門。冰縫裡，她握著的半截工牌終於鬆脫，露出一小角名字：<span class="who">「……蓮」</span>。<br>走廊盡頭的綠影在那之後，終於名副其實地散成一縷青煙——她"下班"了。<br><span class="g">她托夢給你一個名字：蓮。你記住了。</span>`,()=>{ saga.memories.push("green"); saveSaga(); typingLock=false; loop(); }); } },
+      {text:"『我也是｢貨｣之一』——把門關回去，裝沒看見", do:()=>{ adv(3); setSan(-6);
+        continuation(`你退了出來，把那一櫃的安與不安都關回黑暗。<br>你知道，她還在那裡，等著下一個願意伸手的人。`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+/* ============ 支線 · 月夜煙客「換命貿易」 ============ */
+function evMerchant2(){ S.done.add("merchantDeal"); S.done.add("merchant2"); t(132);
+  showScene({ bg:"smoker", loc:LOCNAME.counter, text:[{html:`「客人」隔著一夜的雨，又來了。<br>這次他推開懷裡那本燙金名冊，指著其中空白的一格，聲音像漏水的抽屜：<span class="who">「少你了一格。上回你收了我的錢——」<br>他笑著，遞過一支<b>沒點燃的、泛著藍光的煙</b>。「要不要，做個更大的買賣？」</span><br><span class="dim">他把『把名字寫進他的冊子』與『把壽命換一盞燈』兩件事，攤在你面前。現在你在另一頭了。</span>`}],
+    warn:"用壽命買東西，是這裡最危險、也最自由的貿易。",
+    options:[
+      {text:"一拍即合：用一段壽命，換一張『夜班地契』（換命）", sel:true, do:()=>{ adv(6); rMerchant(15); setLife(-6);
+        continuation(`你拔下一枚壽，換回一張泛著月光的薄紙。<br><span class="r">紙上是你自己的名字，字跡未乾。</span>若你沒細看，就永遠不知道——你把自己撬開了一個角。<br><span class="g">煙客鬨笑離去。</span>`,()=>{ saga.memories.push("moon"); saveSaga(); typingLock=false; loop(); }); } },
+      {text:"婉謝：把煙還他，說『我這行不摻兌』", do:()=>{ adv(4); rMerchant(5); rChen(6);
+        continuation(`你把那支藍煙推回去。<br>他沒勉強，只把冊子合上，恢復成那副濕漉漉的癡樣：「那下回，給你捎好東西。」<br>你想——<span class="g">可在這間超市，拒絕宵夜的，往往是活最久的。</span>`,()=>{ typingLock=false; loop(); }); } },
+    ]});
+}
+
+/* ---------- 血契儀式：開啟地下室 ---------- */
+function evRitual(){
+  S.done.add("ritual"); t(340);
+  const hasInc = S.items.has("incense")||S.items.has("litincense");
+  showScene({ bg:"coldroom", loc:LOCNAME.coldroom, text:[{html:`五點零四分。你退回冷藏庫，把畫好的血紅圓陣擺在最深處的捲簾門前。<br>你點起${hasInc?"護身香":"那一縷煙"},對準陣心，唸出從「第二守則」上偷來的句子。<br>起初什麼也沒發生。接著，地上的圓陣<b>自己開始流血</b>——像一條條被喚醒的血管，朝那扇門縫裡爬。`}],
+    warn:"儀式進行中。會有『訪客』回應你的召喚。",
+    options:[
+      {text:"迎上異動，繼續唸，別停", sel:true, do:()=>{ adv(8); badSound(); document.body.classList.add("danger");
+        fright("門縫裡，有一排細密的『眼』睜開了。").then(()=>{ document.body.classList.remove("danger");
+          setSan(-22); S.done.add("ritualOpen"); addClue(10,"ritual");
+          continuation(`你唸完最後一個字。捲簾門「嘩啦」一聲，自己往上升起——黑幽幽的地下倉梯出現在眼前。<br><span class="g">你'開啟'了這間超市的『地下室』。</span><br>但代價是，門開的那一瞬，你感覺到紅月輕輕『偏移』了一寸——把你牢牢地按在了祂的名冊裡。`,()=>{ typingLock=false; loop(); }); }); } },
+      {text:"唸到一半，忽然認慫，把陣抹掉", do:()=>{ adv(6);
+        continuation(`你猛地踩滅香火，用鞋底把那滴血狠狠抹掉。<br>門縫裡的眼，一瞬間全部閉上。<span class="r">你背過身，喉嚨裡全是自己剛才唸過的句子的腥味。</span>`,()=>{ setSan(-8); typingLock=false; loop(); }); } },
+    ]});
+}
+/* ---------- 地下室：知情者之墓 ---------- */
+function evBasement(){
+  S.done.add("basement"); t(346);
+  showScene({ bg:"basement", loc:LOCNAME.basement, text:[{html:`地下室很黑，只有你手邊的一點光亮。<br>這裡堆滿了「月光牌香煙」的空殼——<b>每一盒，都是一個人一整夜</b>。<br>牆角有一面全是手掌印的鏡子，鏡後壓著一張燒掉一半的合照。<br>相片上站在店長身後的，是<b>陳伯</b>，與另一個你不知道名字的、笑得很乾淨的年輕人。`}],
+    warn:"這裡的真相，足夠把一個人逼瘋。",
+    options:[
+      {text:"收好這張合照，記住每一個名字", sel:true, do:()=>{ adv(5); addItem("secondbook"); addClue(8,"truth"); saga.memories.push("owner"); saga.memories.push("chen"); saveSaga();
+        continuation(`你把它疊好，收進貼身的口袋。<br><span class="dim">店長……不是第一個。他背後，還有人排著隊，等著把名字變成下一盞燈。</span><br><span class="g">現在你明白了：要走出這座位名冊構成的超市，你不能只『熬』——你得把『名字』還回去。</span>`,()=>{ typingLock=false; loop(); }); } },
+      {text:"這裡的氣味讓我頭暈，我該上去透氣", do:()=>{ adv(3); continuation(`你快步退回地面，把那股冰冷的真相關在門後。`,()=>{ setSan(-5); typingLock=false; loop(); }); } },
+    ]});
+}
+
+/* ---------- 全局轉折 ---------- */
+function beat3(){
+  showScene({ bg:"counter", loc:"廣播·全超市", text:[{html:`三點整。頭頂的喇叭「嘶」地一響，接著——<br><span class="who">「親愛的顧客，紅月超市即將打烊。請儘量避開鏡子、關門聲、和自己是不是自己的問題。感謝配合。」</span><br>廣播結束。四周更靜了。你的手電光圈裡，自己的手正不可控地輕顫。`}],
+    warn:"三點了。",
+    options:[{text:"（點擊繼續）深呼吸，握緊能保護自己的東西", sel:true, do:()=>{ adv(3);
+      if(S.items.has("incense")){ continuation(`你點起護身香，一縷青煙在黑暗裡靜靜屹立。<span class="g">它替你擋住了什麼。</span>`,()=>{ typingLock=false; loop(); }); }
+      else continuation(`你沒有香火護體，只能憑著一口氣撐著。`,()=>{ setSan(-6); typingLock=false; loop(); }); } }] });
+}
+function evBlackout(){
+  showScene({ bg:"archive", loc:"全超市", text:[{html:`三點半，<b>超市驟然斷電</b>。一片漆黑，只有冷藏櫃的紅燈還醒著。<br>黑暗中，有極輕的、滑行的聲響，正朝你靠近。<br><span class="dim">你需要一點光。</span>`}],
+    warn:"斷電了。",
+    options:[
+      (S.items.has("flashlight")?{text:"你已備好手電——讓它看清你，你也看清它", sel:true, do:()=>{ adv(4);
+        continuation(`手電亮起，你把它照向聲響來處——空無一物，只有一粒水珠「嗒」地落在磁磚上。<br><span class="g">有光，就有距離。</span>`,()=>{ typingLock=false; loop(); }); } }
+      :{text:"（原地）燃起護身香驅走黑暗中的東西", sel:S.items.has("incense"), do:()=>{ adv(5);
+        continuation(`你摸索著點燃護身香。一團溫暖的橙色光暈裡，那滑行聲像觸到熱浪般，退了回去。`,()=>{ typingLock=false; loop(); }); } }),
+      (S.items.has("incense")?{text:"點起護身香，驅走黑暗裡的動響", sel:true, do:()=>{ adv(5);
+        continuation(`你點燃護身香，橙暈裡，那滑行聲像觸到熱浪般退了回去。<span class="g">香火替你開了一條路。</span>`,()=>{ typingLock=false; loop(); }); } }
+      :(S.items.has("flashlight")?{text:"你有手電，但還是摸黑坐著，不動、不聽", do:()=>{ adv(8);
+        continuation(`你沒有開燈，只是抱著膝蓋，在黑暗裡數自己的心跳。那滑行聲盤桓了很久，最終遠去。<br>你熬過去了，只是出一身冷汗。`,()=>{ setSan(-8); typingLock=false; loop(); }); } }
+      :{text:"在完全黑暗裡捂住守則本，一動不動", do:()=>{ adv(10); badSound();
+        fright("有什麼擦過你的衣角。").then(()=>{ setSan(-24); document.body.classList.remove("danger");
+          continuation(`你用守則本壓住胸口，那滑行聲幾度擦著你過去。等它終於消失，你已是滿身冷汗。<br>你活下來了，但理智被削去一大截。`,()=>{ typingLock=false; loop(); }); }); } })),
+    ]});
+}
+function evDawnGate(){
+  /* 最終節點前的最後自由鎖點：5:30 之後收斂 */
+  S.done.add("afterBlack");
+  showScene({ bg:S.loc, loc:LOCNAME[S.loc], text:[{html:`天快亮了。<br>窗外的黑正在褪去，而那輪紅月，卻緩緩沉向天際——<br>你知道，一個無法迴避的時刻就要到了。<span class="who">5:58，紅月將熄滅。</span>`}],
+    options:[
+      {text:"回到收銀台，迎接最後的抉擇", sel:true, do:()=>{ t(358); typingLock=false; evRedmoon(); } },
+      {text:"（最後一件事）再去檔案室確認一下真相", do:()=>{ adv(3); S.loc="archive"; loop(); } },
+    ]});
+}
+
+/* ---------- 最終抉擇（多結局匯流） ---------- */
+function evRedmoon(){
+  t(358);
+  const hasTruth = S.clues.has(8) && S.items.has("secondbook");
+  const canRite  = S.done.has("ritualOpen") && (S.items.has("incense")||S.items.has("litincense")) && S.items.has("secondbook");
+  const rk = factionReckon();
+  const memOwner=saga.memories.indexOf("owner")>-1, memChen=saga.memories.indexOf("chen")>-1||S.done.has("chenRedeem"), memGreen=saga.memories.indexOf("green")>-1||S.done.has("greenRite");
+  const reckonAll = S.done.has("basement") && memOwner && memChen && memGreen && rk.clean>=3;
+  showScene({ bg:"moon", loc:"5:58 · 紅月熄滅",
+    text:[{html:`5:58。牆上那盞紅月燈飾「啪」地熄滅，整間超市跌入厚重的、能聽見心跳的黑暗。<br>這是你在這裡的<b>第 ${saga.night} 夜</b>。此刻，四個「人」的目光，都隔著黑暗落到了你身上。<br>`}
+      ,{html:`<div class="ledger"><div class="led-title">── 清算天平 ──</div>
+      <div class="led-row"><span>今夜站你這一邊</span><i>${rk.扶} 人</i></div>
+      <div class="led-row"><span>你尚未了結的債</span><i>${rk.債} 筆</i></div>
+      <div class="led-note">${rk.backers.join("、")||"你在這間超市，誰也沒真正交情到。"}${reckonAll?"<br><span class='g'>四方的名字，都已經握在你手裡。</span>":""}</div></div>`}],
+    warn:"最後一個抉擇。牌面在黑暗裡，翻開了你這些夜積攢的每一筆人情。",
+    options:[
+      (reckonAll?{text:"清算 · 余烬：把名冊上所有人的名字一次還清（真結局）", do:()=>{ renderTrueEnd(); } } : null),
+      {text:"守則為上：低頭，不看窗外，等月亮重亮", sel:!hasTruth, do:()=>{ endGame("safe"); } },
+      {text:"憑直覺閉眼：等月亮亮起，也護住『自己』", sel:hasTruth&&!canRite, do:()=>{ endGame("seer"); } },
+      (canRite?{text:"以封店儀式，把『名字』一件一件還回去（需二書＋燃香的陣）", do:()=>{ endGame("rite"); } }
+              :(hasTruth?{text:"焚毀『第二守則』，燒掉店長的名字", do:()=>{ endGame("burn"); } }
+              :{text:"看向窗外那輪蒼白的巨月", do:()=>{ endGame("looked"); } })),
+      {text:"向窗外看最後一眼", do:()=>{ endGame("looked"); } },
+    ].filter(o=>o && o.text),
+  });
+}
+
+/* 結尾時間幫手 */
+function t(key){ const mt={12:"0:12",58:"0:58",110:"1:10",140:"2:20",290:"4:50",305:"5:05",330:"5:30",358:"5:58"}; const v=mt[key]; if(v){ S.timeH=+v.slice(0,2); S.timeM=+v.slice(3); $("clock").textContent=v; } }
+
+/* ---------- 結局（多夜輪迴） ---------- */
+/* 清算天平：這四個角色，今夜誰站在你一邊，你還有多少未清的債 */
+function factionReckon(){
+  const backers=[];
+  if(S.rel.chenyan>=25||S.done.has("chenRedeem")) backers.push("陳伯");
+  if(S.done.has("greenRite")) backers.push("蓮(綠衣)");
+  if(S.done.has("merchant2")) backers.push("煙客");
+  if(S.done.has("ownerRupture")) backers.push("店長(決裂)");
+  const debt=(S.done.has("ownerAccepted")?1:0)+(S.done.has("greed")?1:0);
+  return {扶:backers.length, 債:debt, backers, clean:backers.filter(b=>b!=="店長(決裂)").length};
+}
+function endGame(type){
+  stopDrone(); stopBGM(); document.body.classList.remove("danger");
+  if(AC){ try{ endMusic(type); }catch(e){} }
+  const rk0 = factionReckon();
+  const boded = rk0.債 > rk0.扶;
+  const bodeLine = boded ? `<p class="dim" style="margin-top:14px;line-height:1.9">只是燈滅前，你隱約瞥見：店長那本名冊上，你的名字旁，仍掛著一筆<b style="color:#ff6b3d">未清的債</b>。這座超市，還沒有真正放過你。」</p>` : "";
+  const info={
+    safe:{t:"▍天亮了", c:"#eae1c6", grade:"沉穩守夜人",
+      desc:`五點五十八分，你始終低著頭。當晨光終於從卷簾門縫透進，你才敢抬眼——天亮了。<br>你依著那本守則，穩穩地熬過了一整夜。<br>店長來接班的路上，見你平安，欣慰地笑了。你卻在接過他遞來的「下夜班津貼」時，看見他手背上，泛起一層極薄的、月光的白。`},
+    seer:{t:"▍月亮重新亮起", c:"#b3122a", grade:"真·守夜人（識破）",
+      desc:`你閉上眼，聽憑直覺——等月亮重新亮起。<br>耳邊有一聲輕響，像鎖被溫柔解開。再睜眼，紅月重亮，天邊泛白。<br>你不是「熬過」這晚，你是<b>看穿</b>了它。花名冊上你那一頁的紅叉，被擦得乾乾淨淨。<br>你走出超市。街上車水馬龍。你記得一切，也守住了自己。`},
+    looked:{t:"▍被看見了", c:"#b3122a", grade:"幸存者",
+      desc:`你看向窗外那輪蒼白的巨月。它正睜著。<br>當你回過神，你發現自己站在鏡子前——鏡中人穿著你的衣服，微笑著向你走來。<br>你終於明白：這間超市裡，你我他，都只是夜的「貨」。<br>6:00。你離開，照常生活。只是偶爾照鏡，你會忍不住想：<u>裡面那個，真的是我嗎？</u>`},
+    insane:{t:"▍理智崩潰了", c:"#8a8494", grade:"迷失者",
+      desc:`你的理智像一根被夜風吹斷的線。<br>你不再確定黑暗是真的，還是你自己。你對著空蕩的貨架，一遍遍唸著守則，聲音越唸越小、越溫柔，像在哄睡什麼。<br>次日清晨，店長開門，看見收銀台前坐著一個平靜的「新人」，正對那面鏡子微笑。<br>他翻開花名冊。你那一頁，不知何時，畫上了一個小小的、鮮紅的叉。`},
+    burn:{t:"▍焚書 · 黎明崩解", c:"#ff6b3d", grade:"焚書者（隱藏之真結）",
+      desc:`你點起護身香，把<b>第二守則</b>與店長的名字一起，湊上火苗。紙頁燃起青白色的火——那不是火，是<b>契約在解除</b>。<br>整間超市開始震動，紅月從天際碎成一地褪色的光。<br>你大步走向後門，拉開卷簾。晨曦傾瀉進來。你把懷裡原本那本守則，丟進火裡燒盡。<br>你走出超市。出來後，你才知道自己居然帶出了一樣東西：<b>陳伯</b>——那位失蹤店員——的名字。你欠他一句「謝謝」。<br><span class="g">這是唯一一條，讓其中一部分真相離開的路。</span>`},
+    rite:{t:"▍血契 · 名字歸位", c:"#7dffa6", grade:"儀式完成者",
+      desc:`你在血紅圓陣的中央，將「第二守則」裡每一頁的名字，一個一個、低聲唸回到它們應在的位置。<br>窗外閃了一下——不是燈。是紅月，第一次<b>為某個凡人閉了閉眼</b>。<br>地下室的門，在身後一次次「咣」地關上，像所有被偷走的夜，終於有人還了單。<br>你收起只剩白紙的第二守則。你沒能還完所有人——但你已經把<b>你自己的名字</b>，從店長那本冊子裡，撕下來了。<br><span class="g">若你能記得陳伯與那位年輕人的名字，下一夜，你或許能拆掉整座超市的名字。</span>`},
+  }[type];
+  saga.nights = saga.nights||[];
+  saga.nights.push(type);
+  if(type==="rite") saga.memories.push("rite");
+  if(type==="burn"||type==="rite") saga.memories.push("burn");
+  saveSaga();
+  const memOwner=saga.memories.indexOf("owner")>-1||S.done.has("ownerEndorse");
+  const memChen=saga.memories.indexOf("chen")>-1||S.done.has("chenRedeem");
+  const memRite=saga.memories.indexOf("rite")>-1;
+  const truEndFlag = (memOwner && memChen && memRite) || (saga.nights.length>=3 && memRite);
+  SCENE.innerHTML=`<div class="ending">
+    <h2 style="color:${info.c};text-shadow:0 0 44px ${info.c}">${info.t}</h2>
+    <div class="grade">第 ${saga.night} 夜 · 結局評定 — ${info.grade}</div>
+    <div class="desc">${info.desc}</div>
+    ${bodeLine}
+    <div class="stats">
+      <div>理智<b>${type==="insane"?0:S.san}</b></div>
+      <div>體力<b>${Math.round(S.energy)}</b></div>
+      <div>站你一邊<b>${rk0.扶}</b></div>
+      <div>未清之債<b style="color:${rk0.債>rk0.扶?'#ff6b3d':'#7dffa6'}">${rk0.債}</b></div>
+    </div>
+    <div>
+      ${truEndFlag?`<button class="btn" onclick="renderTrueEnd()">走向晨曦 · 終結輪迴</button>`:""}
+      <button class="btn" onclick="nextNight()">再守一夜 ｜ 第 ${saga.night+1} 夜</button>
+      <button class="btn" onclick="fullReset()">重新開始（捨去所有記憶）</button>
+    </div>
+  </div>`;
+}
+/* 收束輪迴的約定：先把每次熄燈後得到的『名字』寫進本子 */
+function renderTrueEnd(){
+  stopDrone(); if(AC){ try{dawnSound();}catch(e){} setTimeout(()=>{ try{endBGM();}catch(e){} }, 1400); }
+  setBg("reckon");
+  SCENE.innerHTML=`<div class="ending">
+    <h2 style="color:#7dffa6;text-shadow:0 0 44px #7dffa6">▍晨光 · 下班的人</h2>
+    <div class="grade">真結局 — 你記住了所有人的名字</div>
+    <div class="desc">走出灰撲撲的後門的那一刻，你把泛黃的名冊放在腳下。<br>你在晨光裡唸出三個人的名字：<b>陳伯</b>、那個笑得很乾淨的年輕人、<b>還有你自己</b>。<br>不知從哪裡，那盞一直懸在你頭頂的紅月，「啪」地碎了。不是你打碎的。<br>是當你終於<u>不想再守</u>的時候，它自己，先塌了。<br>這座「紅月超市」，從此夜裡，再也不需要守夜人。<br><span class="g">你下班了。這是第 ${saga.night} 夜，也是最後一夜。</span></div>
+    <div class="btn" onclick="fullReset()" style="cursor:pointer;display:inline-block;padding:13px 32px;border:1px solid var(--blood);color:var(--blood)">若你願意，也能成為下一座超市的『開門人』——（重置旅程）</div>
+  </div>`;
+}
+function nextNight(){
+  stopBGM(); stopDrone();
+  saga.night++;
+  saga.owner=S.rel.owner; saga.chenyan=S.rel.chenyan; saga.greenlady=S.rel.greenlady;
+  saveSaga(); freshNight(); introNight();
+}
+function fullReset(){
+  stopBGM(); stopDrone();
+  try{ localStorage.removeItem("redmoon_saga"); }catch(e){}
+  saga={night:1,owner:20,chenyan:20,merchant:20,greenlady:0,memories:[]}; saveSaga();
+  Object.assign(S,{san:100,energy:100,cold:100,life:40,timeH:0,timeM:15,loc:"counter"});
+  S.items.clear(); S.clues.clear(); S.done.clear(); S.visits={}; S.first={}; S.goodEnd=false; S.introduced=false; S.faint=false;
+  seedS(); intro();
+}
+/* 開啟一段前世留下的記憶，重新整理狀態 */
+function freshNight(){
+  Object.assign(S,{san:100,energy:100,cold:100,life:40,timeH:0,timeM:15,loc:"counter",faint:false});
+  S.items.clear(); S.clues.clear(); S.done.clear(); S.visits={}; S.first={}; S.goodEnd=false; S.introduced=false;
+  seedS();
+}
+
+/* ---------- 啟動 ---------- */
+document.addEventListener("click",()=>{ ensureAudio(); $("audioHint").style.display="none"; },{once:true});
+$("btnBook").onclick=openBook;
+$("bookClose").onclick=closeBook;
+$("bookOverlay").onclick=(e)=>{ if(e.target.id==="bookOverlay")closeBook(); };
+window.onload=()=>{ seedS(); setClock(0,0); renderInv(); setName();
+  if(saga.night>1 || saga.memories.length>0) introNight(); else intro(); };
+function setClock(h,m){ S.timeH=h; S.timeM=m; $("clock").textContent=pad(h)+":"+pad(m); }
+function setName(){ }
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape")closeBook(); if(e.key.toLowerCase()==="b"){ if($("bookOverlay").classList.contains("show"))closeBook(); else openBook(); } });
+
+function intro(){
+  showScene({ bg:"redmoon_store", loc:"紅月超市 · 後門",
+    text:[{title:`夜班<span class="blood">守則</span>`,
+      html:`牆上營業牌寫著——<span class="who">紅月超市</span>：0:00 起由你值守。</b><br>店長在交接時塞給你一本泛黃薄冊，封皮用血紅的線縫著。<br>他說：<span class="r">「新人，規矩都在裡面。別問為什麼，照做就行。5:58 天就亮，你就能走。」</span><br>夜風灌進卷簾門縫。你聞到一股淡淡的、鐵鏽般的腥味。<br><span class="dim">這是你的第一夜。也是你第一次意識到——這間超市，像一隻正在眨眼的眼睛。</span>`}],
+    hint:"道具欄在右上角。B鍵可隨時翻開守則。",
+    options:[
+      {text:"翻開《夜班守則》，記下每一條", do:()=>{ adv(2); openBook(); setTimeout(()=>{ closeBook(); S.introduced=true; intro2(); },250); } },
+      {text:"先環顧四周，記住每個房間的位置", do:()=>{ adv(2); S.introduced=true; intro2(); } },
+      {text:"直接走向貨架區開始巡邏", do:()=>{ adv(2); S.introduced=true; S.loc="shelves"; loop(); } },
+    ]});
+}
+function intro2(){
+  showScene({ bg:"counter", loc:"收銀台",
+    text:[{html:`你站到收銀台後。<br><span class="g">現在開始，你可以自由地在超市內往返探索。</span><br>每個地點都有可調查之物；守則能護你，而你的選擇決定這一夜如何結束。<br>時刻留意：<b>3:00、3:30、5:58</b> 三個轉折。<br><span class="dim">你該從哪裡開始？</span>`}],
+    hint:"自由探索模式：選一個方向走吧。",
+    options:[{text:"（邁步）開始探索這間超市", sel:true, do:()=>{ S.introduced=true; loop(); } }] });
+}
+function introNight(){
+  const mems = saga.memories.length ? `你依稀記得：<span class="g">${saga.memories.join("、")}</span>。<br>` : "";
+  showScene({ bg:"redmoon_store", loc:`紅月超市 · 第 ${saga.night} 夜`,
+    text:[{title:`夜再臨<span class="blood">· 輪迴</span>`,
+      html:`你又一次在 0:00 醒來，站在收銀台後，守則本還壓在胸口。<br>店長昨天那句話又在你耳邊響起：「照做就行。」<br>你低頭看了看那本泛黃薄冊——<span class="who">它比前天，少了幾頁你不記得的東西。</span><br>${mems}<br><span class="dim">這一夜，你比上一夜多懂一點。可你也感覺得出：紅月，開始「認得」你了。</span>`}],
+    hint:"前幾夜的記憶沿著名字，一點一點回到你身上。",
+    options:[
+      {text:"翻開守則，確認『你以為自己記得的』規則", do:()=>{ adv(1); openBook(); setTimeout(()=>{ closeBook(); S.introduced=true; afterNight(); },260); } },
+      {text:"不去招惹那本冊子，直接開始巡邏", do:()=>{ adv(1); S.introduced=true; S.loc="counter"; loop(); } },
+    ]});
+}
+function afterNight(){ S.introduced=true; S.loc="shelves";  loop(); }
+</script>
+</body>
+</html>
